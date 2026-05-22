@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -214,11 +214,11 @@ function renderProfile(){document.getElementById("pmail").textContent=session?se
 function refresh(){fillSelect("fCountry","mk");fillSelect("fType","type");fillSelect("fColl","coll");fillSelect("fSize","size");renderGrid();renderMap();renderProfile();}
 function switchTab(t){document.querySelectorAll(".navb").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-tab")===t);});["feed","map","profile","admin"].forEach(function(id){document.getElementById(id).classList.toggle("hidden",id!==t);});}
 function loadAll(){var st=document.getElementById("status");st.textContent="Chargement...";st.style.color="#ffb400";var all=[],from=0,size=1000;
-function batch(){db.from("annonces").select("*").order("created_at",{ascending:false}).range(from,from+size-1).then(function(r){
+function batch(){db.from("annonces").select("*").range(from,from+size-1).then(function(r){
 if(r.error){st.textContent="Erreur: "+r.error.message;st.style.color="#ff5b5b";return;}
 all=all.concat(r.data||[]);
 if(r.data&&r.data.length===size){from+=size;st.textContent="Chargement... ("+all.length+")";batch();}
-else{items=all.map(map);st.textContent="Base connectée ("+items.length+")";st.style.color="#00FF7F";refresh();}
+else{items=all.map(map).reverse();st.textContent="Base connectée ("+items.length+")";st.style.color="#00FF7F";refresh();}
 }).catch(function(e){st.textContent="Hors ligne";st.style.color="#ff5b5b";});}
 batch();
 }
