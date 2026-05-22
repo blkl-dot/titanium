@@ -116,10 +116,15 @@ VIP_LEXIQUE = [
 
 BLACKLIST = [
     "acg", "tech fleece", "nike tech", "puffer", "corteiz", "nocta", "vintage", "oversized",
-    "survet foot", "coton", "cotton", "doudoune basique", "drill", "frip", "retro", "sneaker", "tn",
+    "survet foot", "coton", "cotton", "doudoune basique", "drill", "frip", "retro", "tn",
     "jogger", "jogging basique", "lifestyle", "casual",
     "teplaky", "dresy", "spodnie dresowe", "dres",
     "jeu", "plateau", "board", "game", "jouet", "puzzle", "figurine", "carte", "boite", "box",
+    "chaussure", "chaussures", "sneaker", "sneakers", "basket", "baskets", "shoe", "shoes",
+    "trainers", "buty", "topanky", "obuv", "scarpe", "zapatillas", "tenisky", "cipo", "cipele",
+    "air max", "air force", "dunk", "jordan", "mercurial", "vapormax", "pegasus", "vomero",
+    "footscape", "korki", "crampons",
+    "lacoste", "stone island", "cp company", "c.p. company", "compagnie",
 ]
 MOTS_AUTO_BAN = ["ljr", "og batch", "gx", "haul", "1:1", "pandabuy", "hoobuy", "weidian", "whatsapp"]
 MOTS_SUSPECTS = ["identique au vrai", "fournisseur direct", "sans facture", "discord", "grade a"]
@@ -407,6 +412,8 @@ def process_items(items, code, keyword):
             continue
         if any(bad in full_text for bad in BLACKLIST):
             continue
+        if any(sh in full_text for sh in ["chaussure", "sneaker", "basket", "shoe", "trainers", "buty", "scarpe", "zapatillas", "air max", "jordan", "dunk", "mercurial"]):
+            continue
         is_tshirt = any(kw in full_text for kw in ["t-shirt", "tshirt", "tee-shirt", "tee ", "maillot", "tricko", "koszulka"])
         if is_tshirt and not any(t in full_text for t in ["trail", "division", "aeroswift", "ekiden", "singlet", "racing"]):
             continue
@@ -499,16 +506,42 @@ def market_loop(code, domain, country_id, stop_event):
 # ---------------------------------------------------------------------------
 
 
+def apprendre_des_rejets():
+    """Lit la table rejets et ajoute a la blacklist les mots recurrents de tes suppressions."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return
+    headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+    try:
+        r = requests.get(f"{SUPABASE_URL}/rest/v1/rejets?select=title", headers=headers, timeout=15)
+        if r.status_code != 200:
+            return
+        titres = [x.get("title", "") for x in r.json()]
+    except requests.RequestException:
+        return
+    mots = []
+    for t in titres:
+        mots.extend(re.findall(r"\b[a-z]{4,}\b", (t or "").lower()))
+    protege = set(MARQUES_CIBLES) | {"nike", "armour", "under", "running", "vinted", "aeroswift", "division", "phenom", "trail", "ekiden"}
+    for mot, occ in Counter(mots).most_common(20):
+        if occ >= 3 and mot not in BLACKLIST and mot not in protege:
+            BLACKLIST.append(mot)
+            log("APPRENTI", f"mot rejete ajoute blacklist: '{mot}' (vu {occ}x)")
+
+
 def background_tasks(stop_event):
     last_opt = time.monotonic()
     last_save = time.monotonic()
+    last_learn = time.monotonic()
+    apprendre_des_rejets()
     while not stop_event.is_set():
         time.sleep(5)
         now = time.monotonic()
-        # sauvegarde dedup toutes les 5 min
         if now - last_save > 300:
             save_seen()
             last_save = now
+        if now - last_learn > 1800:
+            apprendre_des_rejets()
+            last_learn = now
         # auto-apprentissage toutes les 2h
         if now - last_opt > 7200:
             maintenant = time.time()
@@ -535,7 +568,7 @@ def self_test_discord():
     if not DISCORD_WEBHOOK:
         return
     try:
-        requests.post(DISCORD_WEBHOOK, json={"content": "SNIPER V13 'ENDURANCE' demarre - veille en cours."}, timeout=10)
+        requests.post(DISCORD_WEBHOOK, json={"content": "SNIPER V13 'ADAPTIVE' demarre - veille en cours."}, timeout=10)
         print("Test Discord envoye.")
     except requests.RequestException as e:
         print(f"Test Discord echoue: {e}")
@@ -543,7 +576,7 @@ def self_test_discord():
 
 def main():
     print("=" * 60)
-    print(" SNIPER V13 'ENDURANCE' - PROJET TITANIUM")
+    print(" SNIPER V13 'ADAPTIVE' - PROJET TITANIUM")
     print(f" {len(MARKETS)} marches | {len(MOTS_CLES_RECHERCHE)} termes | {len(VIP_LEXIQUE)} mots VIP")
     print(" Backoff par pays | pauses humaines | dedup persistante | mode nuit")
     print("=" * 60)
