@@ -4,47 +4,1094 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Titanium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --bg:       #0e0e10;
+      --surface:  #16161a;
+      --border:   #2a2a30;
+      --text:     #ede8df;
+      --muted:    #6b6e78;
+      --silver:   #c2c8d2;
+      --gold:     #c4a96b;
+      --nav-h:    64px;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0a0a0f;
-      color: #e8e8f0;
+      font-family: "DM Mono", monospace;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 100;
+      transition: background 0.4s, border-color 0.4s;
+    }
+
+    nav.scrolled {
+      background: rgba(14,14,16,0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.4rem;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--silver);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    #hero {
       min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding-top: var(--nav-h);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 60px 80px 80px;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 28px;
+    }
+
+    .hero-heading {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(4rem, 8vw, 7.5rem);
+      font-weight: 300;
+      line-height: 0.92;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .hero-heading em {
+      font-style: italic;
+      color: var(--silver);
+    }
+
+    .hero-sub {
+      margin-top: 36px;
+      font-size: 0.8rem;
+      line-height: 1.8;
+      color: var(--muted);
+      max-width: 340px;
+    }
+
+    .hero-actions {
+      margin-top: 52px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      background: var(--silver);
+      color: var(--bg);
+      font-family: "DM Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.25s, transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--text);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.2s;
+    }
+
+    .btn-ghost:hover { color: var(--text); }
+
+    .btn-arrow {
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .btn-ghost:hover .btn-arrow { transform: translateX(4px); }
+
+    .hero-right {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
-    .hero {
-      text-align: center;
-      padding: 2rem;
+    .hero-visual {
+      width: 100%;
+      height: 100%;
+      position: relative;
     }
 
-    h1 {
-      font-size: clamp(3rem, 10vw, 7rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #b0b8c8 0%, #e8ecf4 40%, #7a8fa8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    /* Titanium crystal/mesh visual */
+    .ti-sphere {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(420px, 80%);
+      aspect-ratio: 1;
     }
 
-    p {
-      margin-top: 1.25rem;
-      font-size: 1.1rem;
-      color: #8890a0;
-      letter-spacing: 0.08em;
+    .ti-sphere svg {
+      width: 100%;
+      height: 100%;
+      animation: slow-rotate 18s linear infinite;
+    }
+
+    @keyframes slow-rotate {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .hero-stat-row {
+      position: absolute;
+      bottom: 60px;
+      left: 80px;
+      display: flex;
+      gap: 48px;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-number {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 2.4rem;
+      font-weight: 300;
+      color: var(--silver);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .hero-line {
+      position: absolute;
+      bottom: 0;
+      left: 80px;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ── MARQUEE BAND ── */
+    .marquee-band {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+      background: var(--surface);
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 0;
+      animation: marquee 22s linear infinite;
+      width: max-content;
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .marquee-item {
+      white-space: nowrap;
+      padding: 0 40px;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .marquee-item span {
+      color: var(--gold);
+      margin-right: 40px;
+    }
+
+    /* ── SECTIONS SHARED ── */
+    section {
+      padding: 120px 80px;
+    }
+
+    .section-tag {
+      display: inline-block;
+      font-size: 0.62rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+    }
+
+    .section-tag::before {
+      content: "— ";
+    }
+
+    .section-heading {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.8rem, 5vw, 5rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.015em;
+      color: var(--text);
+    }
+
+    .section-heading em {
+      font-style: italic;
+      color: var(--silver);
+    }
+
+    /* ── ABOUT ── */
+    #about {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .about-text {
+      font-size: 0.82rem;
+      line-height: 1.9;
+      color: var(--muted);
+      margin-top: 28px;
+    }
+
+    .about-text p + p { margin-top: 16px; }
+
+    .about-right {
+      position: relative;
+      aspect-ratio: 4/3;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    /* Titanium material texture visual */
+    .about-visual-inner {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 80% at 30% 40%, rgba(194,200,210,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 70% 60%, rgba(196,169,107,0.06) 0%, transparent 70%),
+        repeating-linear-gradient(
+          -45deg,
+          transparent 0px,
+          transparent 18px,
+          rgba(255,255,255,0.015) 18px,
+          rgba(255,255,255,0.015) 19px
+        );
+    }
+
+    .about-visual-label {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .about-visual-label strong {
+      display: block;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 3.5rem;
+      font-weight: 300;
+      color: var(--border);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .about-pillars {
+      margin-top: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .pillar {
+      background: var(--bg);
+      padding: 20px 24px;
+    }
+
+    .pillar-num {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.4rem;
+      font-weight: 300;
+      color: var(--border);
+      line-height: 1;
+    }
+
+    .pillar-text {
+      margin-top: 8px;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      color: var(--silver);
+      text-transform: uppercase;
+    }
+
+    /* ── CAPABILITIES ── */
+    #capabilities {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cap-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 72px;
+    }
+
+    .cap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .cap-card {
+      background: var(--surface);
+      padding: 48px 40px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+
+    .cap-card::after {
+      content: "";
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .cap-card:hover { background: #1c1c22; }
+    .cap-card:hover::after { transform: scaleX(1); }
+
+    .cap-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 32px;
+      opacity: 0.6;
+    }
+
+    .cap-num {
+      position: absolute;
+      top: 40px; right: 40px;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 4rem;
+      font-weight: 300;
+      color: rgba(255,255,255,0.04);
+      line-height: 1;
+    }
+
+    .cap-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.7rem;
+      font-weight: 300;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+
+    .cap-desc {
+      font-size: 0.75rem;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+
+    /* ── WORKS ── */
+    #works {
+      padding-bottom: 0;
+    }
+
+    .works-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 64px;
+    }
+
+    .works-list {
+      border-top: 1px solid var(--border);
+    }
+
+    .work-item {
+      display: grid;
+      grid-template-columns: 80px 1fr auto auto;
+      align-items: center;
+      gap: 32px;
+      padding: 32px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+    }
+
+    .work-item::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--surface);
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .work-item:hover::before { opacity: 1; }
+
+    .work-item > * { position: relative; z-index: 1; }
+
+    .work-num {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--muted);
+      padding-left: 8px;
+    }
+
+    .work-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 2rem;
+      font-weight: 300;
+      color: var(--text);
+    }
+
+    .work-cat {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .work-year {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .work-arrow {
+      color: var(--gold);
+      font-size: 1.2rem;
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .work-item:hover .work-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 100px;
+      align-items: start;
+    }
+
+    .contact-left p {
+      font-size: 0.8rem;
+      line-height: 1.9;
+      color: var(--muted);
+      margin-top: 24px;
+    }
+
+    .contact-info {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .contact-row {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .contact-row a {
+      color: var(--silver);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .contact-row a:hover { color: var(--text); }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .form-group {
+      position: relative;
+      border-bottom: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+
+    .form-group:focus-within { border-color: var(--silver); }
+
+    .form-group label {
+      position: absolute;
+      top: 18px; left: 0;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      pointer-events: none;
+      transition: all 0.2s;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 32px 0 14px;
+      font-family: "DM Mono", monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+      resize: none;
+    }
+
+    .form-group textarea { min-height: 100px; }
+
+    .form-group input:focus + label,
+    .form-group input:not(:placeholder-shown) + label,
+    .form-group textarea:focus + label,
+    .form-group textarea:not(:placeholder-shown) + label {
+      top: 10px;
+      font-size: 0.56rem;
+      color: var(--gold);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: transparent; }
+
+    .form-submit {
+      margin-top: 36px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px 80px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.1rem;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .footer-copy {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    /* ── REVEAL ANIMATIONS ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.75s cubic-bezier(0.4,0,0.2,1),
+                  transform 0.75s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 900px) {
+      section { padding: 80px 32px; }
+      nav { padding: 0 24px; }
+
+      #hero { grid-template-columns: 1fr; min-height: auto; padding-top: var(--nav-h); }
+      .hero-left { padding: 60px 32px 40px; }
+      .hero-right { height: 300px; }
+      .hero-stat-row { left: 32px; bottom: 24px; gap: 32px; }
+      .stat-number { font-size: 1.8rem; }
+
+      #about { grid-template-columns: 1fr; gap: 48px; }
+      .about-right { aspect-ratio: 16/7; }
+      .about-pillars { grid-template-columns: repeat(4, 1fr); }
+
+      .cap-header { flex-direction: column; align-items: flex-start; gap: 24px; }
+      .cap-grid { grid-template-columns: 1fr; }
+
+      .works-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .work-item { grid-template-columns: 40px 1fr auto; gap: 16px; }
+      .work-year { display: none; }
+
+      #contact { grid-template-columns: 1fr; gap: 56px; }
+
+      footer { flex-direction: column; gap: 20px; text-align: center; padding: 32px; }
+      .footer-links { justify-content: center; flex-wrap: wrap; }
+
+      .nav-links { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="hero">
-    <h1>Titanium</h1>
-    <p>Coming soon</p>
+
+  <!-- NAV -->
+  <nav id="main-nav">
+    <a href="#hero" class="nav-logo">Titanium</a>
+    <ul class="nav-links">
+      <li><a href="#about">À propos</a></li>
+      <li><a href="#capabilities">Capacités</a></li>
+      <li><a href="#works">Réalisations</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-left">
+      <p class="hero-eyebrow">Précision · Durabilité · Excellence</p>
+      <h1 class="hero-heading">
+        L'alliance<br>
+        de la <em>force</em><br>
+        et du raffinement
+      </h1>
+      <p class="hero-sub">
+        Titanium redéfinit les standards de performance et d'élégance —
+        une approche sur-mesure pour les projets qui ne tolèrent pas le compromis.
+      </p>
+      <div class="hero-actions">
+        <a href="#works" class="btn-primary">Découvrir le studio</a>
+        <a href="#contact" class="btn-ghost">
+          Prendre contact <span class="btn-arrow">→</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="hero-visual">
+        <div class="ti-sphere">
+          <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="g1" cx="40%" cy="35%" r="60%">
+                <stop offset="0%" stop-color="#c2c8d2" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#0e0e10" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <!-- Outer ring -->
+            <circle cx="200" cy="200" r="180" stroke="#2a2a30" stroke-width="1"/>
+            <circle cx="200" cy="200" r="140" stroke="#2a2a30" stroke-width="0.5"/>
+            <circle cx="200" cy="200" r="100" stroke="#3a3a44" stroke-width="0.5"/>
+            <circle cx="200" cy="200" r="60" stroke="#3a3a44" stroke-width="0.5"/>
+            <!-- Spokes -->
+            <line x1="200" y1="20" x2="200" y2="380" stroke="#2a2a30" stroke-width="0.5"/>
+            <line x1="20" y1="200" x2="380" y2="200" stroke="#2a2a30" stroke-width="0.5"/>
+            <line x1="73" y1="73" x2="327" y2="327" stroke="#2a2a30" stroke-width="0.5"/>
+            <line x1="327" y1="73" x2="73" y2="327" stroke="#2a2a30" stroke-width="0.5"/>
+            <!-- Accent arcs -->
+            <path d="M 200 20 A 180 180 0 0 1 380 200" stroke="#c2c8d2" stroke-width="1.5" opacity="0.35"/>
+            <path d="M 60 200 A 140 140 0 0 1 200 60" stroke="#c4a96b" stroke-width="1" opacity="0.4"/>
+            <!-- Center dot -->
+            <circle cx="200" cy="200" r="5" fill="#c2c8d2" opacity="0.5"/>
+            <circle cx="200" cy="200" r="2" fill="#c4a96b"/>
+            <!-- Gradient overlay -->
+            <circle cx="200" cy="200" r="180" fill="url(#g1)"/>
+            <!-- Tick marks -->
+            <g stroke="#c2c8d2" stroke-width="0.8" opacity="0.3">
+              <line x1="200" y1="20" x2="200" y2="30"/>
+              <line x1="200" y1="370" x2="200" y2="380"/>
+              <line x1="20" y1="200" x2="30" y2="200"/>
+              <line x1="370" y1="200" x2="380" y2="200"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-stat-row">
+      <div class="stat">
+        <span class="stat-number">12+</span>
+        <span class="stat-label">Années d'expertise</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">84</span>
+        <span class="stat-label">Projets livrés</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">3</span>
+        <span class="stat-label">Continents</span>
+      </div>
+    </div>
+    <div class="hero-line"></div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-band">
+    <div class="marquee-track">
+      <span class="marquee-item"><span>★</span> Conception sur-mesure</span>
+      <span class="marquee-item"><span>★</span> Ingénierie de précision</span>
+      <span class="marquee-item"><span>★</span> Design d'excellence</span>
+      <span class="marquee-item"><span>★</span> Performance absolue</span>
+      <span class="marquee-item"><span>★</span> Matériaux nobles</span>
+      <span class="marquee-item"><span>★</span> Savoir-faire artisanal</span>
+      <!-- duplicate for seamless loop -->
+      <span class="marquee-item"><span>★</span> Conception sur-mesure</span>
+      <span class="marquee-item"><span>★</span> Ingénierie de précision</span>
+      <span class="marquee-item"><span>★</span> Design d'excellence</span>
+      <span class="marquee-item"><span>★</span> Performance absolue</span>
+      <span class="marquee-item"><span>★</span> Matériaux nobles</span>
+      <span class="marquee-item"><span>★</span> Savoir-faire artisanal</span>
+    </div>
   </div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-left">
+      <span class="section-tag reveal">Notre philosophie</span>
+      <h2 class="section-heading reveal reveal-delay-1">
+        Façonné pour<br>
+        <em>durer</em>
+      </h2>
+      <div class="about-text reveal reveal-delay-2">
+        <p>
+          Titanium incarne une conviction profonde : les choses bien conçues méritent d'être belles, durables et fonctionnelles à la fois. Chez nous, chaque projet est traité comme une oeuvre à part entière.
+        </p>
+        <p>
+          Notre équipe réunit des experts issus de disciplines complémentaires — ingénierie, design, stratégie — partageant une même exigence : ne jamais transiger sur la qualité.
+        </p>
+      </div>
+      <div class="about-pillars reveal reveal-delay-3">
+        <div class="pillar">
+          <div class="pillar-num">01</div>
+          <div class="pillar-text">Précision</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-num">02</div>
+          <div class="pillar-text">Durabilité</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-num">03</div>
+          <div class="pillar-text">Élégance</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-num">04</div>
+          <div class="pillar-text">Innovation</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-right reveal reveal-delay-2">
+      <div class="about-visual-inner"></div>
+      <div class="about-visual-label">
+        <strong>Ti</strong>
+        Numéro atomique 22
+      </div>
+    </div>
+  </section>
+
+  <!-- CAPABILITIES -->
+  <section id="capabilities">
+    <div class="cap-header">
+      <div>
+        <span class="section-tag reveal">Ce que nous faisons</span>
+        <h2 class="section-heading reveal reveal-delay-1">
+          Nos <em>capacités</em>
+        </h2>
+      </div>
+    </div>
+
+    <div class="cap-grid">
+      <div class="cap-card reveal">
+        <svg class="cap-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="32" height="32" stroke="#c2c8d2" stroke-width="1"/>
+          <line x1="4" y1="20" x2="36" y2="20" stroke="#c4a96b" stroke-width="0.8"/>
+          <line x1="20" y1="4" x2="20" y2="36" stroke="#c4a96b" stroke-width="0.8"/>
+        </svg>
+        <div class="cap-num">01</div>
+        <h3 class="cap-title">Design & Direction artistique</h3>
+        <p class="cap-desc">Identités visuelles, systèmes de design et directions créatives qui s'imposent dans le temps. Chaque décision esthétique repose sur une logique fonctionnelle rigoureuse.</p>
+      </div>
+
+      <div class="cap-card reveal reveal-delay-1">
+        <svg class="cap-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="14" stroke="#c2c8d2" stroke-width="1"/>
+          <circle cx="20" cy="20" r="6" stroke="#c4a96b" stroke-width="0.8"/>
+          <line x1="20" y1="6" x2="20" y2="14" stroke="#c2c8d2" stroke-width="0.8"/>
+          <line x1="20" y1="26" x2="20" y2="34" stroke="#c2c8d2" stroke-width="0.8"/>
+        </svg>
+        <div class="cap-num">02</div>
+        <h3 class="cap-title">Ingénierie & Fabrication</h3>
+        <p class="cap-desc">Du prototype à la série, notre atelier maîtrise les procédés les plus exigeants : usinage CNC, tôlerie de précision, traitements de surface avancés.</p>
+      </div>
+
+      <div class="cap-card reveal reveal-delay-2">
+        <svg class="cap-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="20,4 36,34 4,34" stroke="#c2c8d2" stroke-width="1" fill="none"/>
+          <polygon points="20,14 28,30 12,30" stroke="#c4a96b" stroke-width="0.8" fill="none"/>
+        </svg>
+        <div class="cap-num">03</div>
+        <h3 class="cap-title">Conseil & Stratégie</h3>
+        <p class="cap-desc">Accompagnement de la phase d'idéation jusqu'au lancement — analyse de marché, positionnement, feuille de route produit et gestion de projet complexe.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKS -->
+  <section id="works">
+    <div class="works-header">
+      <div>
+        <span class="section-tag reveal">Portfolio</span>
+        <h2 class="section-heading reveal reveal-delay-1">Réalisations <em>choisies</em></h2>
+      </div>
+    </div>
+
+    <div class="works-list">
+      <div class="work-item reveal">
+        <span class="work-num">01</span>
+        <span class="work-title">Projekt Helios</span>
+        <span class="work-cat">Design produit</span>
+        <span class="work-year">2024</span>
+        <span class="work-arrow">→</span>
+      </div>
+      <div class="work-item reveal reveal-delay-1">
+        <span class="work-num">02</span>
+        <span class="work-title">Série Albedo</span>
+        <span class="work-cat">Ingénierie de précision</span>
+        <span class="work-year">2024</span>
+        <span class="work-arrow">→</span>
+      </div>
+      <div class="work-item reveal reveal-delay-2">
+        <span class="work-num">03</span>
+        <span class="work-title">Maison Carteret</span>
+        <span class="work-cat">Direction artistique</span>
+        <span class="work-year">2023</span>
+        <span class="work-arrow">→</span>
+      </div>
+      <div class="work-item reveal reveal-delay-3">
+        <span class="work-num">04</span>
+        <span class="work-title">Archipel III</span>
+        <span class="work-cat">Stratégie & Conseil</span>
+        <span class="work-year">2023</span>
+        <span class="work-arrow">→</span>
+      </div>
+      <div class="work-item reveal reveal-delay-4">
+        <span class="work-num">05</span>
+        <span class="work-title">Nexe Form Laboratory</span>
+        <span class="work-cat">Design & Fabrication</span>
+        <span class="work-year">2022</span>
+        <span class="work-arrow">→</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-left">
+      <span class="section-tag reveal">Travailler ensemble</span>
+      <h2 class="section-heading reveal reveal-delay-1">
+        Démarrons<br>
+        <em>la conversation</em>
+      </h2>
+      <p class="reveal reveal-delay-2">
+        Chaque grand projet commence par un échange. Partagez votre vision, vos contraintes, vos ambitions — nous serons ravis d'étudier comment Titanium peut y contribuer.
+      </p>
+      <div class="contact-info reveal reveal-delay-3">
+        <div class="contact-row">
+          <span>Adresse</span>
+          <span>17 rue de la Forge, Paris 75011</span>
+        </div>
+        <div class="contact-row">
+          <span>Email</span>
+          <a href="mailto:studio@titanium.fr">studio@titanium.fr</a>
+        </div>
+        <div class="contact-row">
+          <span>Téléphone</span>
+          <a href="tel:+33140000000">+33 1 40 00 00 00</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-form reveal reveal-delay-2">
+      <form>
+        <div class="form-group">
+          <input type="text" id="name" name="name" placeholder="Nom" />
+          <label for="name">Nom & Prénom</label>
+        </div>
+        <div class="form-group">
+          <input type="email" id="email" name="email" placeholder="Email" />
+          <label for="email">Adresse email</label>
+        </div>
+        <div class="form-group">
+          <textarea id="message" name="message" placeholder="Message"></textarea>
+          <label for="message">Votre message</label>
+        </div>
+        <div class="form-submit">
+          <button type="submit" class="btn-primary">Envoyer →</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-logo">Titanium</span>
+    <span class="footer-copy">© 2025 Titanium Studio. Tous droits réservés.</span>
+    <ul class="footer-links">
+      <li><a href="#about">À propos</a></li>
+      <li><a href="#capabilities">Capacités</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </footer>
+
+  <script>
+    // Nav scroll effect
+    const nav = document.getElementById('main-nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
 </body>
 </html>
