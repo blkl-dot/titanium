@@ -232,3 +232,4 @@ def main():
 
 if __name__ == "__main__":
     main()'
+grep -c "AdaptiveThrottle" ~/v-max-dashboard/scraper_sniper.py
