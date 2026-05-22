@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -46,9 +46,6 @@ nav{display:flex;gap:8px;padding:14px 26px;flex-wrap:wrap}
 .card:hover{transform:translateY(-4px);border-color:rgba(0,255,127,.45)}
 .fav{position:absolute;top:11px;left:11px;z-index:3;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);border:1px solid var(--line);cursor:pointer;color:#fff;font-size:15px}
 .fav.on{color:#ff5b7f;border-color:#ff5b7f}
-.admbtns{position:absolute;top:11px;right:11px;z-index:3;display:flex;flex-direction:column;gap:6px}
-.admbtns button{border:none;border-radius:8px;cursor:pointer;font-size:9px;font-weight:800;text-transform:uppercase;padding:6px 8px;color:#fff}
-.bSold{background:linear-gradient(135deg,#16a34a,#059669)}.bFake{background:linear-gradient(135deg,#dc2626,#b91c1c)}
 .thumb{aspect-ratio:4/5;background:#0a1018;position:relative;overflow:hidden}
 .thumb img{width:100%;height:100%;object-fit:cover;opacity:.9;transition:transform .8s}
 .card:hover .thumb img{transform:scale(1.07)}
@@ -92,6 +89,25 @@ a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:
 .aitem button{border:none;border-radius:7px;padding:5px 8px;font-size:9px;font-weight:800;text-transform:uppercase;cursor:pointer;color:#fff}
 .bDel{background:#b91c1c}.bToggle{background:#475569}.bBan{background:#dc2626}.bUnban{background:#16a34a}
 .kindtitle{font-size:10px;color:var(--neon);text-transform:uppercase;font-weight:800;margin:10px 0 5px}
+/* NETTOYAGE */
+#clean{padding:30px 26px}
+.clean-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+.clean-title{font-size:26px;font-style:italic;font-weight:800;text-transform:uppercase}
+.clean-actions{display:flex;gap:10px;flex-wrap:wrap}
+.cbtn{padding:10px 16px;border:none;border-radius:11px;font-size:11px;font-weight:800;text-transform:uppercase;cursor:pointer}
+.cScan{background:linear-gradient(135deg,var(--neon),var(--cyan));color:#04140c}
+.cDel{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff}
+.cgroup{margin-bottom:24px}
+.cgroup h4{font-size:13px;font-weight:800;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.cgroup h4 .cnt{font-size:11px;color:var(--muted)}
+.csel{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--cyan);cursor:pointer;background:none;border:1px solid var(--line);border-radius:7px;padding:4px 9px}
+.crow{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:rgba(0,0,0,.2);font-size:12px}
+.crow input[type=checkbox]{width:17px;height:17px;accent-color:#ff5b5b;cursor:pointer;flex-shrink:0}
+.crow .ctit{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crow .cmeta{color:var(--muted);font-size:10px;flex-shrink:0}
+.crow img{width:34px;height:42px;object-fit:cover;border-radius:6px;flex-shrink:0}
+.cbar{position:sticky;bottom:0;background:rgba(4,7,13,.9);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 26px;margin:0 -26px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.cbar .sel-info{font-size:12px;font-weight:800}
 ::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-thumb{background:#1c2734;border-radius:10px}
 </style>
 </head>
@@ -119,6 +135,7 @@ a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:
 <button class="navb" data-tab="map">Carte stock</button>
 <button class="navb" data-tab="profile">Profil</button>
 <button class="navb hidden" id="navAdmin" data-tab="admin">Admin</button>
+<button class="navb hidden" id="navClean" data-tab="clean">Nettoyage</button>
 </nav>
 <div id="feed">
 <div class="filters">
@@ -189,6 +206,20 @@ a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:
 </div>
 </div>
 </div>
+<div id="clean" class="hidden">
+<div class="clean-head">
+<div class="clean-title">Nettoyage <span class="accent">du stock</span></div>
+<div class="clean-actions">
+<button class="cbtn cScan" id="cScan">Analyser le stock</button>
+</div>
+</div>
+<p style="color:#8b97a7;font-size:12px;margin-bottom:20px">Coche les annonces à supprimer (ou « Tout sélectionner » par groupe), puis « Supprimer la sélection ». Rien n'est supprimé sans ton clic.</p>
+<div id="cleanBody"><p style="color:#8b97a7">Clique « Analyser le stock » pour voir les annonces à trier.</p></div>
+</div>
+<div class="cbar hidden" id="cbar">
+<span class="sel-info"><span id="selCount">0</span> annonce(s) sélectionnée(s)</span>
+<button class="cbtn cDel" id="cDelBtn">Supprimer la sélection</button>
+</div>
 </div>
 <script>
 var SB_URL="https://fqwkwiikhgwiddqeoecq.supabase.co",SB_KEY="sb_publishable_Z4R_4MOvo3C5FE7bGi6YqA_0nknnRiK";
@@ -198,21 +229,21 @@ var items=[],favs=JSON.parse(localStorage.getItem("tit_favs")||"[]");
 var session=JSON.parse(localStorage.getItem("tit_sess")||"null");
 var admin=false,isAdmin=false;
 var filters={search:"",country:"",type:"",coll:"",size:"",price:""};
+var selectedDel=new Set();
 function typeOf(t){t=t.toLowerCase();if(/(pant|pantalon|tight|collant|jogging|legging|cuissard|bas )/.test(t))return"Pantalon";if(/(veste|jacket|blouson|coupe|windbreaker|gilet|vest|sans manche|sleeveless)/.test(t))return"Veste/Gilet";if(/short/.test(t))return"Short";if(/(t-shirt|tshirt|tee|maillot|singlet|debardeur|top|shirt)/.test(t))return"Haut/T-shirt";if(/(ensemble|survetement)/.test(t))return"Ensemble";return"Autre";}
-function collOf(t){t=t.toLowerCase();if(/aeroswift/.test(t))return"Aeroswift";if(/division/.test(t))return"Run Division";if(/phenom/.test(t))return"Phenom Elite";if(/therma/.test(t))return"Therma-FIT";if(/aeroloft/.test(t))return"Aeroloft";if(/ekiden/.test(t))return"Ekiden";if(/dri-fit|drifit/.test(t))return"Dri-FIT ADV";if(/rush/.test(t))return"UA Rush";if(/flow|velociti/.test(t))return"UA Flow";if(/qualifier|speedpocket/.test(t))return"UA Qualifier";if(/unstoppable/.test(t))return"UA Unstoppable";if(/tech fleece/.test(t))return"Tech Fleece";return"Autre";}
-function map(r){var name=r.title||"?";return{id:r.vinted_id||r.id||name,vid:r.vinted_id,name:name,price:parseFloat(String(r.price))||0,mk:r.country||"??",size:(r.size||r.size_title||"?"),img:r.image_url||"",url:r.direct_buy_url||"#",sc:r.lc_score,type:typeOf(name),coll:collOf(name)};}
+function collOf(t){t=t.toLowerCase();if(/aeroswift/.test(t))return"Aeroswift";if(/division/.test(t))return"Run Division";if(/phenom/.test(t))return"Phenom Elite";if(/therma/.test(t))return"Therma-FIT";if(/aeroloft/.test(t))return"Aeroloft";if(/ekiden/.test(t))return"Ekiden";if(/dri-fit|drifit/.test(t))return"Dri-FIT ADV";if(/rush/.test(t))return"UA Rush";if(/flow|velociti/.test(t))return"UA Flow";if(/qualifier/.test(t))return"UA Qualifier";if(/unstoppable/.test(t))return"UA Unstoppable";if(/tech fleece/.test(t))return"Tech Fleece";return"Autre";}
+function map(r){var name=r.title||"?";return{id:r.vinted_id||name,vid:r.vinted_id,name:name,price:parseFloat(String(r.price))||0,mk:r.country||"??",size:(r.size||r.size_title||"?"),img:r.image_url||"",url:r.direct_buy_url||"#",sc:r.lc_score,type:typeOf(name),coll:collOf(name)};}
 function uniq(k){var s={};items.forEach(function(i){if(i[k])s[i[k]]=1;});return Object.keys(s).sort();}
 function fillSelect(id,k){var sel=document.getElementById(id),cur=sel.value;sel.innerHTML='<option value="">Tous</option>'+uniq(k).map(function(v){return '<option>'+v+'</option>';}).join("");sel.value=cur;}
 function applyFilters(list){return list.filter(function(i){if(filters.search&&i.name.toLowerCase().indexOf(filters.search.toLowerCase())<0)return false;if(filters.country&&i.mk!==filters.country)return false;if(filters.type&&i.type!==filters.type)return false;if(filters.coll&&i.coll!==filters.coll)return false;if(filters.size&&i.size!==filters.size)return false;if(filters.price){var a=filters.price.split("-");if(i.price<+a[0]||i.price>+a[1])return false;}return true;});}
-function cardHTML(it){var f=favs.indexOf(it.id)>=0;return '<div class="card"><button class="fav '+(f?'on':'')+'" data-fav="'+it.id+'">'+(f?'\u2665':'\u2661')+'</button>'+(admin&&isAdmin?'<div class="admbtns"><button class="bSold" data-sold="'+it.vid+'">Vendu</button><button class="bFake" data-fake="'+it.vid+'">Fake</button></div>':'')+'<div class="thumb">'+(it.img?'<img src="'+it.img+'" loading="lazy">':'')+'<span class="mk">'+it.mk+'</span></div><div class="b"><div class="n">'+it.name+'</div><div class="tags"><span class="tag">'+it.type+'</span><span class="tag">'+it.coll+'</span><span class="tag">T.'+it.size+'</span></div><div class="r"><span class="p">'+it.price+'\u20ac</span><span class="s">'+(it.sc!=null?it.sc+'/10':'')+'</span></div><a class="buy" href="'+it.url+'" target="_blank" rel="noopener">Ouvrir l\'annonce</a></div></div>';}
-function bindCards(scope){scope.querySelectorAll("[data-fav]").forEach(function(b){b.onclick=function(){toggleFav(b.getAttribute("data-fav"));};});scope.querySelectorAll("[data-sold]").forEach(function(b){b.onclick=function(){removeListing(b.getAttribute("data-sold"),"vendue");};});scope.querySelectorAll("[data-fake]").forEach(function(b){b.onclick=function(){removeListing(b.getAttribute("data-fake"),"fake");};});}
-function removeListing(vid,label){if(!confirm("Supprimer définitivement cette annonce ("+label+") ?"))return;db.from("annonces").delete().eq("vinted_id",vid).then(function(r){if(r.error){alert("Erreur: "+r.error.message);return;}items=items.filter(function(x){return x.vid!==vid;});refresh();});}
+function cardHTML(it){var f=favs.indexOf(it.id)>=0;return '<div class="card"><button class="fav '+(f?'on':'')+'" data-fav="'+it.id+'">'+(f?'\u2665':'\u2661')+'</button><div class="thumb">'+(it.img?'<img src="'+it.img+'" loading="lazy">':'')+'<span class="mk">'+it.mk+'</span></div><div class="b"><div class="n">'+it.name+'</div><div class="tags"><span class="tag">'+it.type+'</span><span class="tag">'+it.coll+'</span><span class="tag">T.'+it.size+'</span></div><div class="r"><span class="p">'+it.price+'\u20ac</span><span class="s">'+(it.sc!=null?it.sc+'/10':'')+'</span></div><a class="buy" href="'+it.url+'" target="_blank" rel="noopener">Ouvrir l\'annonce</a></div></div>';}
+function bindCards(scope){scope.querySelectorAll("[data-fav]").forEach(function(b){b.onclick=function(){toggleFav(b.getAttribute("data-fav"));};});}
 function toggleFav(id){var i=favs.indexOf(id);if(i>=0)favs.splice(i,1);else favs.push(id);localStorage.setItem("tit_favs",JSON.stringify(favs));refresh();}
 function renderGrid(){var shown=applyFilters(items);document.getElementById("cnt").textContent=shown.length;var g=document.getElementById("grid"),e=document.getElementById("empty");if(!shown.length){g.innerHTML="";e.classList.remove("hidden");e.textContent=items.length?"Aucune annonce pour ces filtres.":"Connecté mais 0 annonce.";return;}e.classList.add("hidden");g.innerHTML=shown.map(cardHTML).join("");bindCards(g);}
 function renderMap(){var c={};items.forEach(function(i){c[i.mk]=(c[i.mk]||0)+1;});var arr=Object.keys(c).map(function(k){return{c:k,n:c[k]};}).sort(function(a,b){return b.n-a.n;});var max=arr.reduce(function(m,x){return Math.max(m,x.n);},1);document.getElementById("plane").innerHTML=arr.map(function(x){var h=30+(x.n/max)*190;return '<div class="bar" data-c="'+x.c+'" style="height:'+h+'px"><div class="lbl"><div class="cn">'+x.n+'</div><div class="cc">'+x.c+'</div></div></div>';}).join("");document.querySelectorAll(".bar").forEach(function(b){b.onclick=function(){filters.country=b.getAttribute("data-c");document.getElementById("fCountry").value=filters.country;switchTab("feed");};});}
-function renderProfile(){document.getElementById("pmail").textContent=session?session.email:"";document.getElementById("pRole").textContent=isAdmin?"ADMIN":"Abonné";document.getElementById("pFav").textContent=favs.length;document.getElementById("pTot").textContent=items.length;var fi=items.filter(function(i){return favs.indexOf(i.id)>=0;});var fg=document.getElementById("favGrid");fg.innerHTML=fi.length?fi.map(cardHTML).join(""):'<p style="color:#8b97a7">Aucun coup de cœur. Touche le \u2661 sur une annonce.</p>';bindCards(fg);}
+function renderProfile(){document.getElementById("pmail").textContent=session?session.email:"";document.getElementById("pRole").textContent=isAdmin?"ADMIN":"Abonné";document.getElementById("pFav").textContent=favs.length;document.getElementById("pTot").textContent=items.length;var fi=items.filter(function(i){return favs.indexOf(i.id)>=0;});var fg=document.getElementById("favGrid");fg.innerHTML=fi.length?fi.map(cardHTML).join(""):'<p style="color:#8b97a7">Aucun coup de cœur.</p>';bindCards(fg);}
 function refresh(){fillSelect("fCountry","mk");fillSelect("fType","type");fillSelect("fColl","coll");fillSelect("fSize","size");renderGrid();renderMap();renderProfile();}
-function switchTab(t){document.querySelectorAll(".navb").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-tab")===t);});["feed","map","profile","admin"].forEach(function(id){document.getElementById(id).classList.toggle("hidden",id!==t);});}
+function switchTab(t){document.querySelectorAll(".navb").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-tab")===t);});["feed","map","profile","admin","clean"].forEach(function(id){document.getElementById(id).classList.toggle("hidden",id!==t);});if(t!=="clean"){document.getElementById("cbar").classList.add("hidden");}}
 function loadAll(){var st=document.getElementById("status");st.textContent="Chargement...";st.style.color="#ffb400";var all=[],from=0,size=1000;
 function batch(){db.from("annonces").select("*").range(from,from+size-1).then(function(r){
 if(r.error){st.textContent="Erreur: "+r.error.message;st.style.color="#ff5b5b";return;}
@@ -223,6 +254,70 @@ else{items=all.map(map).reverse();st.textContent="Base connectée ("+items.lengt
 batch();
 }
 db.channel("ann").on("postgres_changes",{event:"INSERT",schema:"public",table:"annonces"},function(p){items=[map(p.new)].concat(items);refresh();}).on("postgres_changes",{event:"DELETE",schema:"public",table:"annonces"},function(p){var v=p.old&&p.old.vinted_id;if(v){items=items.filter(function(x){return x.vid!==v;});refresh();}}).subscribe();
+// ===== NETTOYAGE =====
+function scanClean(){
+ var fr=[],low=[],dup=[];
+ var seen={};
+ items.forEach(function(i){
+  var isFr=(i.mk==="FR")||(/\.fr\//.test(i.url))||(/vinted\.fr/.test(i.url));
+  if(isFr){fr.push(i);return;}
+  if(i.sc!=null&&i.sc<7){low.push(i);return;}
+  var key=i.name.toLowerCase().trim();
+  if(seen[key]){dup.push(i);}else{seen[key]=true;}
+ });
+ var body=document.getElementById("cleanBody");
+ var html="";
+ html+=cleanGroup("france","\ud83c\uddeb\ud83c\uddf7 Annonces France",fr);
+ html+=cleanGroup("low","\u26a0\ufe0f Score faible (<7)",low);
+ html+=cleanGroup("dup","\ud83d\udc6f Doublons",dup);
+ if(!fr.length&&!low.length&&!dup.length){html='<p style="color:#00FF7F">\u2705 Stock propre, rien \u00e0 nettoyer !</p>';}
+ body.innerHTML=html;
+ bindClean();
+ selectedDel.clear();updateSelCount();
+}
+function cleanGroup(gid,title,arr){
+ if(!arr.length)return "";
+ var rows=arr.map(function(i){
+  return '<div class="crow"><input type="checkbox" class="cchk" data-vid="'+i.vid+'">'+
+   (i.img?'<img src="'+i.img+'" loading="lazy">':'')+
+   '<span class="ctit">'+i.name+'</span>'+
+   '<span class="cmeta">'+i.mk+' \u00b7 '+i.price+'\u20ac \u00b7 '+(i.sc!=null?i.sc+'/10':'')+'</span></div>';
+ }).join("");
+ return '<div class="cgroup"><h4>'+title+' <span class="cnt">('+arr.length+')</span> <button class="csel" data-group="'+gid+'">Tout sélectionner</button></h4>'+rows+'</div>';
+}
+function bindClean(){
+ document.querySelectorAll(".cchk").forEach(function(c){
+  c.onchange=function(){if(c.checked)selectedDel.add(c.getAttribute("data-vid"));else selectedDel.delete(c.getAttribute("data-vid"));updateSelCount();};
+ });
+ document.querySelectorAll(".csel").forEach(function(b){
+  b.onclick=function(){
+   var grp=b.closest(".cgroup");
+   var boxes=grp.querySelectorAll(".cchk");
+   var allChecked=Array.prototype.every.call(boxes,function(x){return x.checked;});
+   boxes.forEach(function(x){x.checked=!allChecked;if(x.checked)selectedDel.add(x.getAttribute("data-vid"));else selectedDel.delete(x.getAttribute("data-vid"));});
+   b.textContent=allChecked?"Tout sélectionner":"Tout désélectionner";
+   updateSelCount();
+  };
+ });
+}
+function updateSelCount(){
+ document.getElementById("selCount").textContent=selectedDel.size;
+ document.getElementById("cbar").classList.toggle("hidden",selectedDel.size===0);
+}
+function deleteSelected(){
+ var vids=Array.from(selectedDel);
+ if(!vids.length)return;
+ if(!confirm(vids.length+" annonce(s) seront supprimées DÉFINITIVEMENT. Confirmer ?"))return;
+ var btn=document.getElementById("cDelBtn");btn.textContent="Suppression...";btn.disabled=true;
+ db.from("annonces").delete().in("vinted_id",vids).then(function(r){
+  btn.textContent="Supprimer la sélection";btn.disabled=false;
+  if(r.error){alert("Erreur: "+r.error.message);return;}
+  items=items.filter(function(x){return vids.indexOf(x.vid)<0;});
+  selectedDel.clear();updateSelCount();refresh();scanClean();
+  alert(vids.length+" annonce(s) supprimée(s).");
+ });
+}
+// ===== ADMIN =====
 function adminLoad(){
 db.from("lexique").select("*").order("kind").then(function(r){
 var by={};(r.data||[]).forEach(function(x){(by[x.kind]=by[x.kind]||[]).push(x);});
@@ -247,6 +342,8 @@ function bindAdmin(){
 document.getElementById("lxAdd").onclick=function(){var m=document.getElementById("lxMot").value.trim();if(!m)return;db.from("lexique").insert({mot:m,kind:document.getElementById("lxKind").value}).then(function(){document.getElementById("lxMot").value="";adminLoad();});};
 document.getElementById("mkAdd").onclick=function(){var c=document.getElementById("mkCode").value.trim().toUpperCase(),u=document.getElementById("mkUrl").value.trim();if(!c||!u)return;db.from("marches").insert({code:c,base_url:u,country_id:parseInt(document.getElementById("mkCid").value)||0}).then(function(){document.getElementById("mkCode").value="";document.getElementById("mkUrl").value="";document.getElementById("mkCid").value="";adminLoad();});};
 document.getElementById("pfAdd").onclick=function(){var e=document.getElementById("pfMail").value.trim().toLowerCase();if(!e)return;db.from("profils").insert({email:e,role:document.getElementById("pfRole").value,statut:"actif",paye_jusqu_au:document.getElementById("pfDate").value||null}).then(function(){document.getElementById("pfMail").value="";adminLoad();});};
+document.getElementById("cScan").onclick=scanClean;
+document.getElementById("cDelBtn").onclick=deleteSelected;
 }
 function startApp(){
 document.getElementById("login").classList.add("hidden");
@@ -255,6 +352,7 @@ isAdmin=session.role==="admin";
 document.getElementById("rolePill").textContent=isAdmin?"admin":"abonné";
 document.getElementById("admBox").classList.toggle("hidden",!isAdmin);
 document.getElementById("navAdmin").classList.toggle("hidden",!isAdmin);
+document.getElementById("navClean").classList.toggle("hidden",!isAdmin);
 bindUI();loadAll();if(isAdmin){bindAdmin();adminLoad();}
 }
 function tryLogin(){
