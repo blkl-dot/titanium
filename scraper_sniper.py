@@ -56,10 +56,13 @@ MARKETS = {
 }
 
 MOTS_CLES_RECHERCHE = [
-    "aeroswift", "run division", "phenom elite", "dri-fit adv",
-    "aeroloft", "shieldrunner", "vaporweave", "cody hudson",
-    "a.i.r.", "nike d.y.e", "repel uv", "therma-fit adv",
+    # --- NIKE (inchange) ---
+    "aeroswift", "run division", "phenom elite", "dri-fit adv", "aeroloft", "shieldrunner",
+    "vaporweave", "cody hudson", "a.i.r.", "nike d.y.e", "repel uv", "therma-fit adv",
     "veste sans manche running", "berlin marathon",
+    # --- UNDER ARMOUR : recherche par MODELE (sans couleur) ---
+    "under armour unstoppable", "under armour qualifier", "under armour storm",
+    "under armour hybrid", "under armour launch", "under armour run",
 ]
 
 MARQUES_CIBLES = ["nike", "under armour", "underarmour", "under armor"]
@@ -112,6 +115,7 @@ VIP_LEXIQUE = [
     "maillot usa", "player exclusive",
     "nike trail", "terra kiger", "kiger", "kiger pant", "wildhorse", "solar chase", "lava loop", "lava loops",
     "dawn range", "juniper", "juniper trail", "trail runner", "trail running jacket", "packable", "trail gore-tex",
+    "unstoppable", "qualifier", "storm", "hybrid pant", "launch", "ua run",
 ]
 
 BLACKLIST = [
