@@ -58,9 +58,6 @@ nav{display:flex;gap:8px;padding:14px 26px;flex-wrap:wrap}
 .p{font-size:18px;font-weight:800}.s{font-size:11px;font-weight:800;color:var(--neon)}
 a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:10px;font-size:10px;font-weight:800;text-transform:uppercase;text-decoration:none;background:linear-gradient(135deg,var(--neon),var(--cyan));color:#04140c}
 .empty{padding:60px 26px;text-align:center;color:var(--muted);font-size:14px}
-.adminbtns{display:flex;gap:5px;margin-top:9px}
-.ab{flex:1;border:none;border-radius:8px;padding:7px 4px;font-size:9px;font-weight:800;text-transform:uppercase;cursor:pointer;color:#fff}
-.ab.vendu{background:#16a34a}.ab.fake{background:#b91c1c}.ab.nd{background:#475569}
 #map{padding:36px 26px 70px}
 .map-title{font-size:30px;font-style:italic;font-weight:800;text-transform:uppercase}
 .map-sub{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.2em;margin-top:6px}
@@ -144,7 +141,6 @@ a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:
 <div class="filters">
 <div class="fg"><label>Recherche</label><input id="fSearch" placeholder="nom..."></div>
 <div class="fg"><label>Pays</label><select id="fCountry"></select></div>
-<div class="fg"><label>Marque</label><select id="fBrand"><option value="">Toutes</option><option>Nike</option><option>Under Armour</option></select></div>
 <div class="fg"><label>Type</label><select id="fType"></select></div>
 <div class="fg"><label>Collection</label><select id="fColl"></select></div>
 <div class="fg"><label>Taille</label><select id="fSize"></select></div>
@@ -232,19 +228,16 @@ var db=supabase.createClient(SB_URL,SB_KEY);
 var items=[],favs=JSON.parse(localStorage.getItem("tit_favs")||"[]");
 var session=JSON.parse(localStorage.getItem("tit_sess")||"null");
 var admin=false,isAdmin=false;
-var filters={search:"",country:"",brand:"",type:"",coll:"",size:"",price:""};
+var filters={search:"",country:"",type:"",coll:"",size:"",price:""};
 var selectedDel=new Set();
 function typeOf(t){t=t.toLowerCase();if(/(pant|pantalon|tight|collant|jogging|legging|cuissard|bas )/.test(t))return"Pantalon";if(/(veste|jacket|blouson|coupe|windbreaker|gilet|vest|sans manche|sleeveless)/.test(t))return"Veste/Gilet";if(/short/.test(t))return"Short";if(/(t-shirt|tshirt|tee|maillot|singlet|debardeur|top|shirt)/.test(t))return"Haut/T-shirt";if(/(ensemble|survetement)/.test(t))return"Ensemble";return"Autre";}
 function collOf(t){t=t.toLowerCase();if(/aeroswift/.test(t))return"Aeroswift";if(/division/.test(t))return"Run Division";if(/phenom/.test(t))return"Phenom Elite";if(/therma/.test(t))return"Therma-FIT";if(/aeroloft/.test(t))return"Aeroloft";if(/ekiden/.test(t))return"Ekiden";if(/dri-fit|drifit/.test(t))return"Dri-FIT ADV";if(/rush/.test(t))return"UA Rush";if(/flow|velociti/.test(t))return"UA Flow";if(/qualifier/.test(t))return"UA Qualifier";if(/unstoppable/.test(t))return"UA Unstoppable";if(/tech fleece/.test(t))return"Tech Fleece";return"Autre";}
-function isShoe(t){t=(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");return /chaussure|sneaker|basket|shoe|trainers|buty|scarpe|zapatillas|tenisky|kedukai|kedai|kedas|cipele|cipo|obuv|topanky|air max|air force|jordan|dunk|mercurial|vapormax|pegasus|vomero|footscape|korki|crampon/.test(t);}
-function brandOf(t){t=t.toLowerCase();if(/under ?armou?r/.test(t)||/\bua\b/.test(t))return"Under Armour";if(/nike/.test(t))return"Nike";return"Autre";}
-function map(r){var name=r.title||"?";return{id:r.vinted_id||name,vid:r.vinted_id,name:name,price:parseFloat(String(r.price))||0,mk:r.country||"??",size:(r.size||r.size_title||"?"),img:r.image_url||"",url:r.direct_buy_url||"#",sc:r.lc_score,type:typeOf(name),coll:collOf(name),brand:brandOf(name)};}
+function map(r){var name=r.title||"?";return{id:r.vinted_id||name,vid:r.vinted_id,name:name,price:parseFloat(String(r.price))||0,mk:r.country||"??",size:(r.size||r.size_title||"?"),img:r.image_url||"",url:r.direct_buy_url||"#",sc:r.lc_score,type:typeOf(name),coll:collOf(name)};}
 function uniq(k){var s={};items.forEach(function(i){if(i[k])s[i[k]]=1;});return Object.keys(s).sort();}
 function fillSelect(id,k){var sel=document.getElementById(id),cur=sel.value;sel.innerHTML='<option value="">Tous</option>'+uniq(k).map(function(v){return '<option>'+v+'</option>';}).join("");sel.value=cur;}
-function applyFilters(list){return list.filter(function(i){if(filters.search&&i.name.toLowerCase().indexOf(filters.search.toLowerCase())<0)return false;if(filters.country&&i.mk!==filters.country)return false;if(filters.brand&&i.brand!==filters.brand)return false;if(filters.type&&i.type!==filters.type)return false;if(filters.coll&&i.coll!==filters.coll)return false;if(filters.size&&i.size!==filters.size)return false;if(filters.price){var a=filters.price.split("-");if(i.price<+a[0]||i.price>+a[1])return false;}return true;});}
-function cardHTML(it){var f=favs.indexOf(it.id)>=0;return '<div class="card"><button class="fav '+(f?'on':'')+'" data-fav="'+it.id+'">'+(f?'\u2665':'\u2661')+'</button><div class="thumb">'+(it.img?'<img src="'+it.img+'" loading="lazy">':'')+'<span class="mk">'+it.mk+'</span></div><div class="b"><div class="n">'+it.name+'</div><div class="tags"><span class="tag">'+it.type+'</span><span class="tag">'+it.coll+'</span><span class="tag">T.'+it.size+'</span></div><div class="r"><span class="p">'+it.price+'\u20ac</span><span class="s">'+(it.sc!=null?it.sc+'/10':'')+'</span></div><a class="buy" href="'+it.url+'" target="_blank" rel="noopener">Ouvrir l\'annonce</a>'+(admin?'<div class="adminbtns"><button class="ab vendu" data-del="'+it.vid+'" data-r="vendu">Vendu</button><button class="ab fake" data-del="'+it.vid+'" data-r="fake">Fake</button><button class="ab nd" data-del="'+it.vid+'" data-r="non_desire">Non désiré</button></div>':'')+'</div></div>';}
-function bindCards(scope){scope.querySelectorAll("[data-fav]").forEach(function(b){b.onclick=function(){toggleFav(b.getAttribute("data-fav"));};});scope.querySelectorAll("[data-del]").forEach(function(b){b.onclick=function(){quickDelete(b.getAttribute("data-del"),b.getAttribute("data-r"));};});}
-function quickDelete(vid,reason){var it=items.filter(function(x){return x.vid===vid;})[0];if(!it)return;if(!confirm('Supprimer "'+it.name+'" ('+reason+') ?'))return;db.from("rejets").insert([{title:it.name,raison:reason,vinted_id:vid}]).then(function(){db.from("annonces").delete().eq("vinted_id",vid).then(function(r){if(r.error){alert("Erreur: "+r.error.message);return;}items=items.filter(function(x){return x.vid!==vid;});refresh();});});}
+function applyFilters(list){return list.filter(function(i){if(filters.search&&i.name.toLowerCase().indexOf(filters.search.toLowerCase())<0)return false;if(filters.country&&i.mk!==filters.country)return false;if(filters.type&&i.type!==filters.type)return false;if(filters.coll&&i.coll!==filters.coll)return false;if(filters.size&&i.size!==filters.size)return false;if(filters.price){var a=filters.price.split("-");if(i.price<+a[0]||i.price>+a[1])return false;}return true;});}
+function cardHTML(it){var f=favs.indexOf(it.id)>=0;return '<div class="card"><button class="fav '+(f?'on':'')+'" data-fav="'+it.id+'">'+(f?'\u2665':'\u2661')+'</button><div class="thumb">'+(it.img?'<img src="'+it.img+'" loading="lazy">':'')+'<span class="mk">'+it.mk+'</span></div><div class="b"><div class="n">'+it.name+'</div><div class="tags"><span class="tag">'+it.type+'</span><span class="tag">'+it.coll+'</span><span class="tag">T.'+it.size+'</span></div><div class="r"><span class="p">'+it.price+'\u20ac</span><span class="s">'+(it.sc!=null?it.sc+'/10':'')+'</span></div><a class="buy" href="'+it.url+'" target="_blank" rel="noopener">Ouvrir l\'annonce</a></div></div>';}
+function bindCards(scope){scope.querySelectorAll("[data-fav]").forEach(function(b){b.onclick=function(){toggleFav(b.getAttribute("data-fav"));};});}
 function toggleFav(id){var i=favs.indexOf(id);if(i>=0)favs.splice(i,1);else favs.push(id);localStorage.setItem("tit_favs",JSON.stringify(favs));refresh();}
 function renderGrid(){var shown=applyFilters(items);document.getElementById("cnt").textContent=shown.length;var g=document.getElementById("grid"),e=document.getElementById("empty");if(!shown.length){g.innerHTML="";e.classList.remove("hidden");e.textContent=items.length?"Aucune annonce pour ces filtres.":"Connecté mais 0 annonce.";return;}e.classList.add("hidden");g.innerHTML=shown.map(cardHTML).join("");bindCards(g);}
 function renderMap(){var c={};items.forEach(function(i){c[i.mk]=(c[i.mk]||0)+1;});var arr=Object.keys(c).map(function(k){return{c:k,n:c[k]};}).sort(function(a,b){return b.n-a.n;});var max=arr.reduce(function(m,x){return Math.max(m,x.n);},1);document.getElementById("plane").innerHTML=arr.map(function(x){var h=30+(x.n/max)*190;return '<div class="bar" data-c="'+x.c+'" style="height:'+h+'px"><div class="lbl"><div class="cn">'+x.n+'</div><div class="cc">'+x.c+'</div></div></div>';}).join("");document.querySelectorAll(".bar").forEach(function(b){b.onclick=function(){filters.country=b.getAttribute("data-c");document.getElementById("fCountry").value=filters.country;switchTab("feed");};});}
@@ -256,11 +249,11 @@ function batch(){db.from("annonces").select("*").range(from,from+size-1).then(fu
 if(r.error){st.textContent="Erreur: "+r.error.message;st.style.color="#ff5b5b";return;}
 all=all.concat(r.data||[]);
 if(r.data&&r.data.length===size){from+=size;st.textContent="Chargement... ("+all.length+")";batch();}
-else{items=all.map(map).filter(function(x){return !isShoe(x.name);}).reverse();st.textContent="Base connectée ("+items.length+")";st.style.color="#00FF7F";refresh();}
+else{items=all.map(map).reverse();st.textContent="Base connectée ("+items.length+")";st.style.color="#00FF7F";refresh();}
 }).catch(function(e){st.textContent="Hors ligne";st.style.color="#ff5b5b";});}
 batch();
 }
-db.channel("ann").on("postgres_changes",{event:"INSERT",schema:"public",table:"annonces"},function(p){var it=map(p.new);if(isShoe(it.name))return;items=[it].concat(items);refresh();}).on("postgres_changes",{event:"DELETE",schema:"public",table:"annonces"},function(p){var v=p.old&&p.old.vinted_id;if(v){items=items.filter(function(x){return x.vid!==v;});refresh();}}).subscribe();
+db.channel("ann").on("postgres_changes",{event:"INSERT",schema:"public",table:"annonces"},function(p){items=[map(p.new)].concat(items);refresh();}).on("postgres_changes",{event:"DELETE",schema:"public",table:"annonces"},function(p){var v=p.old&&p.old.vinted_id;if(v){items=items.filter(function(x){return x.vid!==v;});refresh();}}).subscribe();
 // ===== NETTOYAGE =====
 function scanClean(){
  var fr=[],low=[],dup=[];
@@ -316,15 +309,12 @@ function deleteSelected(){
  if(!vids.length)return;
  if(!confirm(vids.length+" annonce(s) seront supprimées DÉFINITIVEMENT. Confirmer ?"))return;
  var btn=document.getElementById("cDelBtn");btn.textContent="Suppression...";btn.disabled=true;
- var rejets=items.filter(function(x){return vids.indexOf(x.vid)>=0;}).map(function(x){return {title:x.name,raison:"supprime_admin",vinted_id:x.vid};});
- db.from("rejets").insert(rejets).then(function(){
-  db.from("annonces").delete().in("vinted_id",vids).then(function(r){
-   btn.textContent="Supprimer la sélection";btn.disabled=false;
-   if(r.error){alert("Erreur: "+r.error.message);return;}
-   items=items.filter(function(x){return vids.indexOf(x.vid)<0;});
-   selectedDel.clear();updateSelCount();refresh();scanClean();
-   alert(vids.length+" annonce(s) supprimée(s). Le bot apprendra de ces rejets.");
-  });
+ db.from("annonces").delete().in("vinted_id",vids).then(function(r){
+  btn.textContent="Supprimer la sélection";btn.disabled=false;
+  if(r.error){alert("Erreur: "+r.error.message);return;}
+  items=items.filter(function(x){return vids.indexOf(x.vid)<0;});
+  selectedDel.clear();updateSelCount();refresh();scanClean();
+  alert(vids.length+" annonce(s) supprimée(s).");
  });
 }
 // ===== ADMIN =====
@@ -379,12 +369,11 @@ session={email:m,role:pf.role||"user"};localStorage.setItem("tit_sess",JSON.stri
 function bindUI(){
 document.getElementById("fSearch").oninput=function(){filters.search=this.value;renderGrid();};
 document.getElementById("fCountry").onchange=function(){filters.country=this.value;renderGrid();};
-document.getElementById("fBrand").onchange=function(){filters.brand=this.value;renderGrid();};
 document.getElementById("fType").onchange=function(){filters.type=this.value;renderGrid();};
 document.getElementById("fColl").onchange=function(){filters.coll=this.value;renderGrid();};
 document.getElementById("fSize").onchange=function(){filters.size=this.value;renderGrid();};
 document.getElementById("fPrice").onchange=function(){filters.price=this.value;renderGrid();};
-document.getElementById("fClear").onclick=function(){filters={search:"",country:"",brand:"",type:"",coll:"",size:"",price:""};["fSearch","fCountry","fBrand","fType","fColl","fSize","fPrice"].forEach(function(id){document.getElementById(id).value="";});renderGrid();};
+document.getElementById("fClear").onclick=function(){filters={search:"",country:"",type:"",coll:"",size:"",price:""};["fSearch","fCountry","fType","fColl","fSize","fPrice"].forEach(function(id){document.getElementById(id).value="";});renderGrid();};
 document.querySelectorAll(".navb").forEach(function(b){b.onclick=function(){switchTab(b.getAttribute("data-tab"));};});
 var sw=document.getElementById("admSw");sw.onclick=function(){admin=!admin;sw.classList.toggle("on");renderGrid();renderProfile();};
 document.getElementById("logout").onclick=function(){localStorage.removeItem("tit_sess");location.reload();};
