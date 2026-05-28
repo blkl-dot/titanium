@@ -290,31 +290,50 @@ batch();
 function initRealtime(){if(!db||!db.channel)return;db.channel("ann").on("postgres_changes",{event:"INSERT",schema:"public",table:"annonces"},function(p){var it=map(p.new);if(isShoe(it.name)||isKidWoman(it.name))return;it.recent=true;setTimeout(function(){it.recent=false;refresh();},180000);items=[it].concat(items);refresh();}).on("postgres_changes",{event:"DELETE",schema:"public",table:"annonces"},function(p){var v=p.old&&p.old.vinted_id;if(v){items=items.filter(function(x){return x.vid!==v;});refresh();}}).subscribe();}
 // ===== NETTOYAGE =====
 var cleanSearchTerm="";
+// Detecte les vetements a SUPPRIMER : sports d'equipe, universites US,
+// foot/basket/NFL, lifestyle, autres marques. PAS du running technique.
+function isJunk(t){
+ t=(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+ // marques non voulues (autre que Nike / Under Armour)
+ if(/north face|the north face|adidas|puma|reebok|new balance|asics|columbia|patagonia|salomon|decathlon|kalenji/.test(t))return true;
+ // equipes universitaires americaines / NCAA
+ if(/longhorn|texas|alabama|crimson|oregon|duke|kentucky|michigan|ohio state|gonzaga|ucla|lsu|clemson|auburn|ncaa|university|college|wildcats|tigers|bulldogs|gators/.test(t))return true;
+ // ligues / sports collectifs (NFL, NBA, foot, basket, baseball...)
+ if(/titans|cowboys|lakers|warriors|patriots|49ers|raiders|packers|nfl|nba|mlb|nhl|jersey|maillot equipe|basketball|football club|\bfc\b|soccer|baseball|hockey/.test(t))return true;
+ // equipes nationales de foot
+ if(/england|angleterre|france fff|\bfff\b|brasil|portugal cf|espana|deutschland|three lions/.test(t))return true;
+ // PHENOM en version basket (singlet/jersey/reversible) -> pas le Phenom Elite running
+ if(/phenom/.test(t)&&/(jersey|reversible|basketball|tank|debardeur|singlet)/.test(t))return true;
+ return false;
+}
 function scanClean(){
- var fake=[],low=[],dup=[];
+ var junk=[],fake=[],dup=[];
  var seen={};
  var fakeRx=/(replica|réplica|fake|faux|copie|copy|\baaa\b|1:1|mirror|dhgate|aliexpress|pas authentique|non authentique)/i;
  items.forEach(function(i){
   var t=(i.name||"").toLowerCase();
+  // 1) a supprimer : equipes/universites/lifestyle/autre marque/basket
+  if(isJunk(i.name)){junk.push(i);return;}
+  // 2) fake / contrefacon
   if(fakeRx.test(t)){fake.push(i);return;}
-  if(i.sc!=null&&i.sc<7){low.push(i);return;}
+  // 3) doublons (meme titre)
   var key=t.trim();
   if(seen[key]){dup.push(i);}else{seen[key]=true;}
  });
- window._cleanGroups={dup:dup,fake:fake,low:low};
+ window._cleanGroups={junk:junk,dup:dup,fake:fake};
  renderCleanGroups();
 }
 function renderCleanGroups(){
- var g=window._cleanGroups||{dup:[],fake:[],low:[]};
+ var g=window._cleanGroups||{junk:[],dup:[],fake:[]};
  var term=cleanSearchTerm.toLowerCase().trim();
  function filt(arr){if(!term)return arr;return arr.filter(function(i){return (i.name||"").toLowerCase().indexOf(term)>=0;});}
- var dup=filt(g.dup),fake=filt(g.fake),low=filt(g.low);
+ var junk=filt(g.junk),dup=filt(g.dup),fake=filt(g.fake);
  var body=document.getElementById("cleanBody");
  var html="";
+ html+=cleanGroup("junk","\ud83d\uddd1\ufe0f A supprimer (equipes / lifestyle / autre marque)",junk);
  html+=cleanGroup("dup","\ud83d\udc6f Doublons",dup);
  html+=cleanGroup("fake","\ud83d\udeab Fake / suspects",fake);
- html+=cleanGroup("low","\u26a0\ufe0f Score faible (<7)",low);
- if(!dup.length&&!fake.length&&!low.length){
+ if(!junk.length&&!dup.length&&!fake.length){
    html=term?'<p style="color:#8b97a7">Aucun resultat pour « '+term+' ».</p>':'<p style="color:#00FF7F">\u2705 Stock propre, rien a nettoyer !</p>';
  }
  body.innerHTML=html;
