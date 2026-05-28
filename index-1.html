@@ -142,6 +142,7 @@ a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:
 <button class="navb" data-tab="profile">Profil</button>
 <button class="navb hidden" id="navAdmin" data-tab="admin">Admin</button>
 <button class="navb hidden" id="navClean" data-tab="clean">Nettoyage</button>
+<button class="navb hidden" id="navTrain" data-tab="train">Entraînement</button>
 </nav>
 <div id="feed">
 <div class="filters">
@@ -232,7 +233,35 @@ a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:
 <span class="sel-info"><span id="selCount">0</span> annonce(s) sélectionnée(s)</span>
 <button class="cbtn cDel" id="cDelBtn">Supprimer la sélection</button>
 </div>
+<div id="train" class="hidden">
+<div class="clean-head">
+<div class="clean-title">Entraînement <span class="accent">du filtre</span></div>
 </div>
+<p style="color:#8b97a7;font-size:12px;margin-bottom:16px">Pour chaque annonce : <b style="color:var(--neon)">Je veux</b> (garde) ou <b style="color:#ff5b5b">Je veux pas</b> (envoyé en rejet, le bot ne le reproposera plus). Glisse la carte ou clique. Ça affine tes goûts.</p>
+<div id="trainZone" style="position:relative;min-height:430px;display:flex;align-items:center;justify-content:center;margin-bottom:16px"></div>
+<div style="display:flex;gap:12px;justify-content:center;align-items:center;max-width:460px;margin:0 auto">
+<button class="cbtn cDel" id="tNo" style="flex:1">✗ Je veux pas</button>
+<button class="cbtn" id="tSkip" style="background:rgba(255,255,255,.06);border:1px solid var(--line);color:#8b97a7">Passer</button>
+<button class="cbtn cScan" id="tYes" style="flex:1">✓ Je veux</button>
+</div>
+<p id="trainProg" style="text-align:center;color:#8b97a7;font-size:12px;margin-top:14px;font-weight:800"></p>
+</div>
+</div>
+<style>
+#train .tcard{position:absolute;width:100%;max-width:360px;background:#0a121b;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5);transition:transform .35s cubic-bezier(.2,.8,.3,1),opacity .35s}
+#train .tph{aspect-ratio:4/5;background:#070d14;position:relative;overflow:hidden}
+#train .tph img{width:100%;height:100%;object-fit:cover}
+#train .tnoimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+#train .tmeta{padding:14px 16px 18px}
+#train .tti{font-size:14px;font-weight:700;line-height:1.35;margin-bottom:10px;min-height:38px}
+#train .trow{display:flex;justify-content:space-between;align-items:center}
+#train .tpr{font-size:20px;font-weight:800}
+#train .tsc{font-size:11px;color:var(--muted)}
+#train .tstamp{position:absolute;top:26px;font-size:26px;font-weight:900;font-style:italic;text-transform:uppercase;padding:5px 14px;border-radius:10px;border:4px solid;opacity:0;transition:opacity .15s;pointer-events:none;z-index:5}
+#train .tstamp.y{right:16px;color:var(--neon);border-color:var(--neon);transform:rotate(13deg)}
+#train .tstamp.n{left:16px;color:#ff3b5c;border-color:#ff3b5c;transform:rotate(-13deg)}
+#train .tcard.sy .tstamp.y{opacity:1}#train .tcard.sn .tstamp.n{opacity:1}
+</style>
 <script>
 var SB_URL="https://fqwkwiikhgwiddqeoecq.supabase.co",SB_KEY="sb_publishable_Z4R_4MOvo3C5FE7bGi6YqA_0nknnRiK";
 var FOUNDER="bathelemydelpeyrou@gmail.com",GATE_PW="apexsniper";
@@ -276,7 +305,7 @@ function renderMap(){var c={};items.forEach(function(i){c[i.mk]=(c[i.mk]||0)+1;}
 function renderProfile(){document.getElementById("pmail").textContent=session?session.email:"";document.getElementById("pRole").textContent=isAdmin?"ADMIN":"Abonné";document.getElementById("pFav").textContent=favs.length;document.getElementById("pTot").textContent=items.length;var fi=items.filter(function(i){return favs.indexOf(i.id)>=0;});var fg=document.getElementById("favGrid");fg.innerHTML=fi.length?fi.map(cardHTML).join(""):'<p style="color:#8b97a7">Aucun coup de cœur.</p>';bindCards(fg);try{renderDevices();}catch(e){}}
 function renderDevices(){var el=document.getElementById("devList");if(!el||!session)return;function show(rows){rows=rows||[];if(!rows.length){el.innerHTML='<p style="color:#8b97a7;font-size:12px">Aucun appareil enregistr\u00e9.</p>';return;}el.innerHTML=rows.map(function(x){var me=x.device_id===DEVICE_ID;return '<div class="aitem"><span>'+(x.label||"Appareil")+(me?' <span class="meta">(cet appareil)</span>':'')+'<br><span class="meta">'+(x.last_seen?("vu "+new Date(x.last_seen).toLocaleString()):"")+'</span></span><div class="ops"><button class="bDel" data-devdel="'+x.device_id+'">'+(me?"D\u00e9connecter":"Retirer")+'</button></div></div>';}).join("");el.querySelectorAll("[data-devdel]").forEach(function(b){b.onclick=function(){var did=b.getAttribute("data-devdel");if(!confirm("Lib\u00e9rer cet appareil ?"))return;var em=session.email;function done(){if(did===DEVICE_ID){try{localStorage.removeItem("tit_sess");}catch(e){}location.reload();}else renderDevices();}if(db){db.from("appareils").delete().eq("email",em).eq("device_id",did).then(done);}else{restDelete("appareils","email=eq."+encodeURIComponent(em)+"&device_id=eq."+encodeURIComponent(did)).then(done);}};});}if(db){db.from("appareils").select("*").eq("email",session.email).then(function(r){show(r.data);}).catch(function(){el.innerHTML='<p style="color:#8b97a7;font-size:12px">Indisponible.</p>';});}else{restGet("appareils?select=*&email=eq."+encodeURIComponent(session.email)).then(show).catch(function(){el.innerHTML='<p style="color:#8b97a7;font-size:12px">Indisponible.</p>';});}}
 function refresh(){fillSelect("fCountry","mk");fillSelect("fType","type");fillSelect("fColl","coll");fillSelect("fSize","size");renderGrid();renderMap();renderProfile();}
-function switchTab(t){document.querySelectorAll(".navb").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-tab")===t);});["feed","map","profile","admin","clean"].forEach(function(id){document.getElementById(id).classList.toggle("hidden",id!==t);});if(t!=="clean"){document.getElementById("cbar").classList.add("hidden");}}
+function switchTab(t){document.querySelectorAll(".navb").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-tab")===t);});["feed","map","profile","admin","clean","train"].forEach(function(id){document.getElementById(id).classList.toggle("hidden",id!==t);});if(t!=="clean"){document.getElementById("cbar").classList.add("hidden");}if(t==="train"){startTrain();}}
 function loadAllRest(){var st=document.getElementById("status");var all=[],from=0,size=1000;function b2(){restGet("annonces?select=*&limit="+size+"&offset="+from).then(function(rows){rows=rows||[];all=all.concat(rows);if(rows.length===size){from+=size;if(st){st.textContent="Chargement... ("+all.length+")";}b2();}else{items=all.map(map).filter(function(x){return !isShoe(x.name);}).reverse();if(st){st.textContent="Base connect\u00e9e ("+items.length+")";st.style.color="#00FF7F";}refresh();}}).catch(function(){if(st){st.textContent="Hors ligne";st.style.color="#ff5b5b";}});}b2();}
 function loadAll(){if(!db){return loadAllRest();}var st=document.getElementById("status");st.textContent="Chargement...";st.style.color="#ffb400";var all=[],from=0,size=1000;
 function batch(){db.from("annonces").select("*").range(from,from+size-1).then(function(r){
@@ -385,6 +414,57 @@ function deleteSelected(){
   });
  });
 }
+// ===== ENTRAINEMENT (mini-jeu) =====
+var trainQueue=[],trainIdx=0,trainStats={yes:0,no:0};
+function startTrain(){
+ // on prend les annonces non encore jugees, melangees
+ trainQueue=items.slice().sort(function(){return Math.random()-0.5;});
+ trainIdx=0;trainStats={yes:0,no:0};
+ renderTrain();
+}
+function renderTrain(){
+ var zone=document.getElementById("trainZone");if(!zone)return;
+ if(trainIdx>=trainQueue.length){
+  zone.innerHTML='<p style="color:#00FF7F;font-size:15px;text-align:center">\u2705 Termin\u00e9 ! '+trainStats.yes+' gard\u00e9es, '+trainStats.no+' rejet\u00e9es.<br><span style="color:#8b97a7;font-size:12px">Recharge la page pour recommencer.</span></p>';
+  document.getElementById("trainProg").textContent="";
+  return;
+ }
+ var a=trainQueue[trainIdx];
+ document.getElementById("trainProg").textContent=(trainIdx+1)+" / "+trainQueue.length+"  ·  \u2713 "+trainStats.yes+"  \u2717 "+trainStats.no;
+ var card=document.createElement("div");
+ card.className="tcard";
+ var esc=function(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");};
+ card.innerHTML='<div class="tstamp y">Je veux</div><div class="tstamp n">Jette</div>'+
+  '<div class="tph">'+(a.img?'<img src="'+esc(a.img)+'" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">':'')+'<div class="tnoimg" style="display:'+(a.img?'none':'flex')+'">Pas d\'image</div></div>'+
+  '<div class="tmeta"><div class="tti">'+esc(a.name)+'</div><div class="trow"><span class="tpr">'+a.price+'\u20ac</span><span class="tsc">'+esc(a.mk)+(a.sc!=null?" \u00b7 "+a.sc+"/10":"")+'</span></div></div>';
+ zone.innerHTML="";zone.appendChild(card);
+ enableTrainSwipe(card);
+}
+function trainDecide(want){
+ if(trainIdx>=trainQueue.length)return;
+ var a=trainQueue[trainIdx];
+ if(want){trainStats.yes++;}
+ else{
+  trainStats.no++;
+  // envoyer en rejet : le bot ne le reproposera plus + retire du site
+  if(db&&a.vid){
+   db.from("rejets").insert([{title:a.name,raison:"train_rejet",vinted_id:a.vid}]).then(function(){
+    db.from("annonces").delete().eq("vinted_id",a.vid);
+   });
+   items=items.filter(function(x){return x.vid!==a.vid;});
+  }
+ }
+ var card=document.querySelector("#trainZone .tcard");
+ if(card){card.classList.add(want?"sy":"sn");card.style.transform="translateX("+(want?"":"-")+"140%) rotate("+(want?"":"-")+"16deg)";card.style.opacity="0";}
+ trainIdx++;
+ setTimeout(renderTrain,300);
+}
+function enableTrainSwipe(card){
+ var sx=0,dx=0,drag=false;
+ card.addEventListener("touchstart",function(e){drag=true;sx=e.touches[0].clientX;},{passive:true});
+ card.addEventListener("touchmove",function(e){if(!drag)return;dx=e.touches[0].clientX-sx;card.style.transform="translateX("+dx+"px) rotate("+(dx/20)+"deg)";card.classList.toggle("sy",dx>40);card.classList.toggle("sn",dx<-40);},{passive:true});
+ card.addEventListener("touchend",function(){drag=false;if(dx>90){trainDecide(true);}else if(dx<-90){trainDecide(false);}else{card.style.transform="";card.classList.remove("sy","sn");}dx=0;});
+}
 // ===== ADMIN =====
 function adminLoad(){if(!db)return;
 db.from("lexique").select("*").order("kind").then(function(r){
@@ -412,6 +492,9 @@ document.getElementById("mkAdd").onclick=function(){var c=document.getElementByI
 document.getElementById("pfAdd").onclick=function(){var e=document.getElementById("pfMail").value.trim().toLowerCase();if(!e)return;db.from("profils").insert({email:e,role:document.getElementById("pfRole").value,statut:"actif",paye_jusqu_au:document.getElementById("pfDate").value||null}).then(function(){document.getElementById("pfMail").value="";adminLoad();});};
 document.getElementById("cScan").onclick=scanClean;
 document.getElementById("cDelBtn").onclick=deleteSelected;
+var ty=document.getElementById("tYes");if(ty)ty.onclick=function(){trainDecide(true);};
+var tn=document.getElementById("tNo");if(tn)tn.onclick=function(){trainDecide(false);};
+var ts=document.getElementById("tSkip");if(ts)ts.onclick=function(){trainIdx++;renderTrain();};
 var cs=document.getElementById("cSearch");if(cs){cs.oninput=function(){cleanSearchTerm=this.value;if(window._cleanGroups)renderCleanGroups();};}
 }
 function startApp(){
@@ -422,6 +505,7 @@ document.getElementById("rolePill").textContent=isAdmin?"admin":"abonné";
 document.getElementById("admBox").classList.toggle("hidden",!isAdmin);
 document.getElementById("navAdmin").classList.toggle("hidden",!isAdmin);
 document.getElementById("navClean").classList.toggle("hidden",!isAdmin);
+document.getElementById("navTrain").classList.toggle("hidden",!isAdmin);
 bindUI();loadAll();if(isAdmin){bindAdmin();adminLoad();}
 }
 function checkDevice(email,cb){
