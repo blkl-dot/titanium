@@ -224,7 +224,8 @@ a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:
 <button class="cbtn cScan" id="cScan">Analyser le stock</button>
 </div>
 </div>
-<p style="color:#8b97a7;font-size:12px;margin-bottom:20px">Coche les annonces à supprimer (ou « Tout sélectionner » par groupe), puis « Supprimer la sélection ». Rien n'est supprimé sans ton clic.</p>
+<p style="color:#8b97a7;font-size:12px;margin-bottom:16px">Coche les annonces à supprimer (ou « Tout sélectionner » par groupe), puis « Supprimer la sélection ». Rien n'est supprimé sans ton clic.</p>
+<div class="fg" style="margin-bottom:18px"><label>Rechercher dans le stock</label><input id="cSearch" placeholder="nom, marque, modèle..." style="background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;color:#fff;padding:11px;font-size:13px;width:100%;max-width:420px"></div>
 <div id="cleanBody"><p style="color:#8b97a7">Clique « Analyser le stock » pour voir les annonces à trier.</p></div>
 </div>
 <div class="cbar hidden" id="cbar">
@@ -256,10 +257,10 @@ var sortMode="recent";var uaOnly=false;
 var selectedDel=new Set();
 function typeOf(t){t=t.toLowerCase();if(/(pant|pantalon|tight|collant|jogging|legging|cuissard|bas )/.test(t))return"Pantalon";if(/(veste|jacket|blouson|coupe|windbreaker|gilet|vest|sans manche|sleeveless)/.test(t))return"Veste/Gilet";if(/short/.test(t))return"Short";if(/(t-shirt|tshirt|tee|maillot|singlet|debardeur|top|shirt)/.test(t))return"Haut/T-shirt";if(/(ensemble|survetement)/.test(t))return"Ensemble";return"Autre";}
 function collOf(t){t=t.toLowerCase();if(/aeroswift/.test(t))return"Aeroswift";if(/division/.test(t))return"Run Division";if(/phenom/.test(t))return"Phenom Elite";if(/therma/.test(t))return"Therma-FIT";if(/aeroloft/.test(t))return"Aeroloft";if(/ekiden/.test(t))return"Ekiden";if(/dri-fit|drifit/.test(t))return"Dri-FIT ADV";if(/rush/.test(t))return"UA Rush";if(/flow|velociti/.test(t))return"UA Flow";if(/qualifier/.test(t))return"UA Qualifier";if(/unstoppable/.test(t))return"UA Unstoppable";if(/tech fleece/.test(t))return"Tech Fleece";return"Autre";}
-function isShoe(t){t=(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");return /chaussure|sneaker|basket|shoe|trainers|buty|scarpe|zapatillas|tenisky|kedukai|kedai|kedas|cipele|cipo|obuv|topanky|air max|air force|jordan|dunk|mercurial|vapormax|pegasus|vomero|footscape|korki|crampon/.test(t);}
-function isKidWoman(t){t=(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");return /junior|enfant|\bkid|kids|\bboy|\bgirl|garcon|fille|youth|\bjr\b|femme|woman|women|damski|damen|mujer|donna|wmns|dziecie|detsk/.test(t);}
+function isShoe(t){t=(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");if(/jordan moss/.test(t))return false;return /chaussure|sneaker|basket|shoe|trainers|buty|scarpe|zapatillas|tenisky|kedukai|kedai|kedas|cipele|cipo|obuv|topanky|air max|air force|jordan|dunk|mercurial|vapormax|pegasus|vomero|footscape|korki|crampon/.test(t);}
+function isKidWoman(t){t=(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");return /junior|enfant|\bkid|kids|\bboy|\bgirl|garcon|fille|youth|\bjr\b|femme|woman|women|damski|damen|mujer|donna|wmns|dziecie|detsk|robe|dress|jupe|skirt|legging|brassiere|sport bra|bralette/.test(t);}
 function isUATarget(t){t=(t||"").toLowerCase();return /unstoppable|qualifier|storm|hybrid|launch/.test(t)&&(/under ?armou?r/.test(t)||/\bua\b/.test(t));}
-function brandOf(t){t=t.toLowerCase();if(/under ?armou?r/.test(t)||/\bua\b/.test(t))return"Under Armour";if(/nike/.test(t))return"Nike";return"Autre";}
+function brandOf(t){t=t.toLowerCase();if(/under ?armou?r/.test(t)||/\bua\b/.test(t))return"Under Armour";if(/nike/.test(t))return"Nike";if(/nathan bell|cody hudson|kelly anna|jordan moss/.test(t))return"Nike";return"Autre";}
 function map(r){var name=r.title||"?";return{id:r.vinted_id||name,vid:r.vinted_id,name:name,price:parseFloat(String(r.price))||0,mk:r.country||"??",size:(r.size||r.size_title||"?"),img:r.image_url||"",url:r.direct_buy_url||"#",sc:r.lc_score,type:typeOf(name),coll:collOf(name),brand:brandOf(name),ts:(r.created_at?Date.parse(r.created_at):0),recent:false};}
 function uniq(k){var s={};items.forEach(function(i){if(i[k])s[i[k]]=1;});return Object.keys(s).sort();}
 function fillSelect(id,k){var sel=document.getElementById(id),cur=sel.value;sel.innerHTML='<option value="">Tous</option>'+uniq(k).map(function(v){return '<option>'+v+'</option>';}).join("");sel.value=cur;}
@@ -288,22 +289,34 @@ batch();
 }
 function initRealtime(){if(!db||!db.channel)return;db.channel("ann").on("postgres_changes",{event:"INSERT",schema:"public",table:"annonces"},function(p){var it=map(p.new);if(isShoe(it.name)||isKidWoman(it.name))return;it.recent=true;setTimeout(function(){it.recent=false;refresh();},180000);items=[it].concat(items);refresh();}).on("postgres_changes",{event:"DELETE",schema:"public",table:"annonces"},function(p){var v=p.old&&p.old.vinted_id;if(v){items=items.filter(function(x){return x.vid!==v;});refresh();}}).subscribe();}
 // ===== NETTOYAGE =====
+var cleanSearchTerm="";
 function scanClean(){
- var fr=[],low=[],dup=[];
+ var fake=[],low=[],dup=[];
  var seen={};
+ var fakeRx=/(replica|réplica|fake|faux|copie|copy|\baaa\b|1:1|mirror|dhgate|aliexpress|pas authentique|non authentique)/i;
  items.forEach(function(i){
-  var isFr=(i.mk==="FR")||(/\.fr\//.test(i.url))||(/vinted\.fr/.test(i.url));
-  if(isFr){fr.push(i);return;}
+  var t=(i.name||"").toLowerCase();
+  if(fakeRx.test(t)){fake.push(i);return;}
   if(i.sc!=null&&i.sc<7){low.push(i);return;}
-  var key=i.name.toLowerCase().trim();
+  var key=t.trim();
   if(seen[key]){dup.push(i);}else{seen[key]=true;}
  });
+ window._cleanGroups={dup:dup,fake:fake,low:low};
+ renderCleanGroups();
+}
+function renderCleanGroups(){
+ var g=window._cleanGroups||{dup:[],fake:[],low:[]};
+ var term=cleanSearchTerm.toLowerCase().trim();
+ function filt(arr){if(!term)return arr;return arr.filter(function(i){return (i.name||"").toLowerCase().indexOf(term)>=0;});}
+ var dup=filt(g.dup),fake=filt(g.fake),low=filt(g.low);
  var body=document.getElementById("cleanBody");
  var html="";
- html+=cleanGroup("france","\ud83c\uddeb\ud83c\uddf7 Annonces France",fr);
- html+=cleanGroup("low","\u26a0\ufe0f Score faible (<7)",low);
  html+=cleanGroup("dup","\ud83d\udc6f Doublons",dup);
- if(!fr.length&&!low.length&&!dup.length){html='<p style="color:#00FF7F">\u2705 Stock propre, rien \u00e0 nettoyer !</p>';}
+ html+=cleanGroup("fake","\ud83d\udeab Fake / suspects",fake);
+ html+=cleanGroup("low","\u26a0\ufe0f Score faible (<7)",low);
+ if(!dup.length&&!fake.length&&!low.length){
+   html=term?'<p style="color:#8b97a7">Aucun resultat pour « '+term+' ».</p>':'<p style="color:#00FF7F">\u2705 Stock propre, rien a nettoyer !</p>';
+ }
  body.innerHTML=html;
  bindClean();
  selectedDel.clear();updateSelCount();
@@ -349,7 +362,7 @@ function deleteSelected(){
    if(r.error){alert("Erreur: "+r.error.message);return;}
    items=items.filter(function(x){return vids.indexOf(x.vid)<0;});
    selectedDel.clear();updateSelCount();refresh();scanClean();
-   alert(vids.length+" annonce(s) supprimée(s). Le bot apprendra de ces rejets.");
+   alert(vids.length+" annonce(s) supprimée(s). Le bot ne les reproposera plus.");
   });
  });
 }
@@ -380,6 +393,7 @@ document.getElementById("mkAdd").onclick=function(){var c=document.getElementByI
 document.getElementById("pfAdd").onclick=function(){var e=document.getElementById("pfMail").value.trim().toLowerCase();if(!e)return;db.from("profils").insert({email:e,role:document.getElementById("pfRole").value,statut:"actif",paye_jusqu_au:document.getElementById("pfDate").value||null}).then(function(){document.getElementById("pfMail").value="";adminLoad();});};
 document.getElementById("cScan").onclick=scanClean;
 document.getElementById("cDelBtn").onclick=deleteSelected;
+var cs=document.getElementById("cSearch");if(cs){cs.oninput=function(){cleanSearchTerm=this.value;if(window._cleanGroups)renderCleanGroups();};}
 }
 function startApp(){
 document.getElementById("login").classList.add("hidden");
