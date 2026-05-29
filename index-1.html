@@ -142,7 +142,6 @@ a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:
 <button class="navb" data-tab="profile">Profil</button>
 <button class="navb hidden" id="navAdmin" data-tab="admin">Admin</button>
 <button class="navb hidden" id="navClean" data-tab="clean">Nettoyage</button>
-<button class="navb hidden" id="navTrain" data-tab="train">Entraînement</button>
 </nav>
 <div id="feed">
 <div class="filters">
@@ -233,35 +232,7 @@ a.buy{display:block;text-align:center;margin-top:11px;padding:9px;border-radius:
 <span class="sel-info"><span id="selCount">0</span> annonce(s) sélectionnée(s)</span>
 <button class="cbtn cDel" id="cDelBtn">Supprimer la sélection</button>
 </div>
-<div id="train" class="hidden">
-<div class="clean-head">
-<div class="clean-title">Entraînement <span class="accent">du filtre</span></div>
 </div>
-<p style="color:#8b97a7;font-size:12px;margin-bottom:16px">Pour chaque annonce : <b style="color:var(--neon)">Je veux</b> (garde) ou <b style="color:#ff5b5b">Je veux pas</b> (envoyé en rejet, le bot ne le reproposera plus). Glisse la carte ou clique. Ça affine tes goûts.</p>
-<div id="trainZone" style="position:relative;min-height:430px;display:flex;align-items:center;justify-content:center;margin-bottom:16px"></div>
-<div style="display:flex;gap:12px;justify-content:center;align-items:center;max-width:460px;margin:0 auto">
-<button class="cbtn cDel" id="tNo" style="flex:1">✗ Je veux pas</button>
-<button class="cbtn" id="tSkip" style="background:rgba(255,255,255,.06);border:1px solid var(--line);color:#8b97a7">Passer</button>
-<button class="cbtn cScan" id="tYes" style="flex:1">✓ Je veux</button>
-</div>
-<p id="trainProg" style="text-align:center;color:#8b97a7;font-size:12px;margin-top:14px;font-weight:800"></p>
-</div>
-</div>
-<style>
-#train .tcard{position:absolute;width:100%;max-width:360px;background:#0a121b;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5);transition:transform .35s cubic-bezier(.2,.8,.3,1),opacity .35s}
-#train .tph{aspect-ratio:4/5;background:#070d14;position:relative;overflow:hidden}
-#train .tph img{width:100%;height:100%;object-fit:cover}
-#train .tnoimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
-#train .tmeta{padding:14px 16px 18px}
-#train .tti{font-size:14px;font-weight:700;line-height:1.35;margin-bottom:10px;min-height:38px}
-#train .trow{display:flex;justify-content:space-between;align-items:center}
-#train .tpr{font-size:20px;font-weight:800}
-#train .tsc{font-size:11px;color:var(--muted)}
-#train .tstamp{position:absolute;top:26px;font-size:26px;font-weight:900;font-style:italic;text-transform:uppercase;padding:5px 14px;border-radius:10px;border:4px solid;opacity:0;transition:opacity .15s;pointer-events:none;z-index:5}
-#train .tstamp.y{right:16px;color:var(--neon);border-color:var(--neon);transform:rotate(13deg)}
-#train .tstamp.n{left:16px;color:#ff3b5c;border-color:#ff3b5c;transform:rotate(-13deg)}
-#train .tcard.sy .tstamp.y{opacity:1}#train .tcard.sn .tstamp.n{opacity:1}
-</style>
 <script>
 var SB_URL="https://fqwkwiikhgwiddqeoecq.supabase.co",SB_KEY="sb_publishable_Z4R_4MOvo3C5FE7bGi6YqA_0nknnRiK";
 var FOUNDER="bathelemydelpeyrou@gmail.com",GATE_PW="apexsniper";
@@ -297,7 +268,7 @@ function applyFilters(list){return list.filter(function(i){if(isKidWoman(i.name)
 function sortList(a){a=a.slice();if(sortMode==="price")a.sort(function(x,y){return x.price-y.price;});else if(sortMode==="score")a.sort(function(x,y){return (y.sc||0)-(x.sc||0);});else a.sort(function(x,y){return (y.ts||0)-(x.ts||0);});return a;}
 function cardHTML(it){var f=favs.indexOf(it.id)>=0;return '<div class="card"><button class="fav '+(f?'on':'')+'" data-fav="'+it.id+'">'+(f?'\u2665':'\u2661')+'</button><div class="thumb">'+(it.img?'<img src="'+it.img+'" loading="lazy">':'')+'<span class="mk">'+it.mk+'</span>'+(it.recent?'<span class="newbadge">NOUVEAU</span>':'')+'</div><div class="b"><div class="n">'+it.name+'</div><div class="tags"><span class="tag">'+it.type+'</span><span class="tag">'+it.coll+'</span><span class="tag">T.'+it.size+'</span></div><div class="r"><span class="p">'+it.price+'\u20ac</span><span class="s">'+(it.sc!=null?it.sc+'/10':'')+'</span></div><a class="buy" href="'+it.url+'" target="_blank" rel="noopener">Ouvrir l\'annonce</a><button class="copyl" data-copy="'+it.url+'">Copier le lien</button>'+(admin?'<div class="adminbtns"><button class="ab vendu" data-del="'+it.vid+'" data-r="vendu">Vendu</button><button class="ab fake" data-del="'+it.vid+'" data-r="fake">Fake</button><button class="ab nd" data-del="'+it.vid+'" data-r="non_desire">Non désiré</button></div>':'')+'</div></div>';}
 function bindCards(scope){scope.querySelectorAll("[data-fav]").forEach(function(b){b.onclick=function(){toggleFav(b.getAttribute("data-fav"));};});scope.querySelectorAll("[data-del]").forEach(function(b){b.onclick=function(){quickDelete(b.getAttribute("data-del"),b.getAttribute("data-r"));};});scope.querySelectorAll("[data-copy]").forEach(function(b){b.onclick=function(){navigator.clipboard.writeText(b.getAttribute("data-copy"));var o=b.textContent;b.textContent="Lien copie !";setTimeout(function(){b.textContent=o;},1200);};});}
-function quickDelete(vid,reason){if(!isAdmin)return;var it=items.filter(function(x){return x.vid===vid;})[0];if(!it)return;if(!confirm('Supprimer "'+it.name+'" ('+reason+') ?'))return;db.from("rejets").insert([{title:it.name,raison:reason,vinted_id:vid}]).then(function(){db.from("annonces").delete().eq("vinted_id",vid).then(function(r){if(r.error){alert("Erreur: "+r.error.message);return;}items=items.filter(function(x){return x.vid!==vid;});refresh();});});}
+function quickDelete(vid,reason){if(!isAdmin||!isOwner())return;var it=items.filter(function(x){return x.vid===vid;})[0];if(!it)return;if(!confirm('Supprimer "'+it.name+'" ('+reason+') ?'))return;db.from("rejets").insert([{title:it.name,raison:reason,vinted_id:vid}]).then(function(){db.from("annonces").delete().eq("vinted_id",vid).then(function(r){if(r.error){alert("Erreur: "+r.error.message);return;}items=items.filter(function(x){return x.vid!==vid;});refresh();});});}
 function toggleFav(id){var i=favs.indexOf(id);if(i>=0)favs.splice(i,1);else favs.push(id);localStorage.setItem("tit_favs",JSON.stringify(favs));refresh();}
 function renderGrid(){var shown=sortList(applyFilters(items));document.getElementById("cnt").textContent=shown.length;updateDayStats();var g=document.getElementById("grid"),e=document.getElementById("empty");if(!shown.length){g.innerHTML="";e.classList.remove("hidden");e.textContent=items.length?"Aucune annonce pour ces filtres.":"Connecté mais 0 annonce.";return;}e.classList.add("hidden");g.innerHTML=shown.map(cardHTML).join("");bindCards(g);}
 function updateDayStats(){var el=document.getElementById("dayStats");if(!el)return;var today=new Date();today.setHours(0,0,0,0);var t0=today.getTime();var jour=items.filter(function(i){return i.ts&&i.ts>=t0&&!isKidWoman(i.name);});var n=jour.length;var moy=n?Math.round(jour.reduce(function(s,i){return s+i.price;},0)/n):0;el.textContent=n+" pepite(s) aujourd'hui · prix moyen "+moy+"€";}
@@ -306,12 +277,11 @@ function renderProfile(){document.getElementById("pmail").textContent=session?se
 function renderDevices(){var el=document.getElementById("devList");if(!el||!session)return;function show(rows){rows=rows||[];if(!rows.length){el.innerHTML='<p style="color:#8b97a7;font-size:12px">Aucun appareil enregistr\u00e9.</p>';return;}el.innerHTML=rows.map(function(x){var me=x.device_id===DEVICE_ID;return '<div class="aitem"><span>'+(x.label||"Appareil")+(me?' <span class="meta">(cet appareil)</span>':'')+'<br><span class="meta">'+(x.last_seen?("vu "+new Date(x.last_seen).toLocaleString()):"")+'</span></span><div class="ops"><button class="bDel" data-devdel="'+x.device_id+'">'+(me?"D\u00e9connecter":"Retirer")+'</button></div></div>';}).join("");el.querySelectorAll("[data-devdel]").forEach(function(b){b.onclick=function(){var did=b.getAttribute("data-devdel");if(!confirm("Lib\u00e9rer cet appareil ?"))return;var em=session.email;function done(){if(did===DEVICE_ID){try{localStorage.removeItem("tit_sess");}catch(e){}location.reload();}else renderDevices();}if(db){db.from("appareils").delete().eq("email",em).eq("device_id",did).then(done);}else{restDelete("appareils","email=eq."+encodeURIComponent(em)+"&device_id=eq."+encodeURIComponent(did)).then(done);}};});}if(db){db.from("appareils").select("*").eq("email",session.email).then(function(r){show(r.data);}).catch(function(){el.innerHTML='<p style="color:#8b97a7;font-size:12px">Indisponible.</p>';});}else{restGet("appareils?select=*&email=eq."+encodeURIComponent(session.email)).then(show).catch(function(){el.innerHTML='<p style="color:#8b97a7;font-size:12px">Indisponible.</p>';});}}
 function refresh(){fillSelect("fCountry","mk");fillSelect("fType","type");fillSelect("fColl","coll");fillSelect("fSize","size");renderGrid();renderMap();renderProfile();}
 function switchTab(t){
- // securite : les onglets admin (admin/clean/train) sont reserves a l'admin
- if((t==="admin"||t==="clean"||t==="train")&&!isAdmin){t="feed";}
+ // SECURITE : les onglets admin sont reserves a l'owner (toi)
+ if((t==="admin"||t==="clean")&&(!isAdmin||!isOwner())){t="feed";}
  document.querySelectorAll(".navb").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-tab")===t);});
- ["feed","map","profile","admin","clean","train"].forEach(function(id){document.getElementById(id).classList.toggle("hidden",id!==t);});
+ ["feed","map","profile","admin","clean"].forEach(function(id){document.getElementById(id).classList.toggle("hidden",id!==t);});
  if(t!=="clean"){document.getElementById("cbar").classList.add("hidden");}
- if(t==="train"){startTrain();}
 }
 function loadAllRest(){var st=document.getElementById("status");var all=[],from=0,size=1000;function b2(){restGet("annonces?select=*&limit="+size+"&offset="+from).then(function(rows){rows=rows||[];all=all.concat(rows);if(rows.length===size){from+=size;if(st){st.textContent="Chargement... ("+all.length+")";}b2();}else{items=all.map(map).filter(function(x){return !isShoe(x.name);}).reverse();if(st){st.textContent="Base connect\u00e9e ("+items.length+")";st.style.color="#00FF7F";}refresh();}}).catch(function(){if(st){st.textContent="Hors ligne";st.style.color="#ff5b5b";}});}b2();}
 function loadAll(){if(!db){return loadAllRest();}var st=document.getElementById("status");st.textContent="Chargement...";st.style.color="#ffb400";var all=[],from=0,size=1000;
@@ -343,6 +313,7 @@ function isJunk(t){
  return false;
 }
 function scanClean(){
+ if(!isAdmin||!isOwner())return;   // SECURITE
  var junk=[],fake=[],dup=[];
  var seen={};
  var fakeRx=/(replica|réplica|fake|faux|copie|copy|\baaa\b|1:1|mirror|dhgate|aliexpress|pas authentique|non authentique)/i;
@@ -406,7 +377,7 @@ function updateSelCount(){
  document.getElementById("cbar").classList.toggle("hidden",selectedDel.size===0);
 }
 function deleteSelected(){
- if(!isAdmin)return;   // securite : reserve a l'admin
+ if(!isAdmin||!isOwner())return;   // SECURITE : double verrou
  var vids=Array.from(selectedDel);
  if(!vids.length)return;
  if(!confirm(vids.length+" annonce(s) seront supprimées DÉFINITIVEMENT. Confirmer ?"))return;
@@ -422,61 +393,8 @@ function deleteSelected(){
   });
  });
 }
-// ===== ENTRAINEMENT (mini-jeu) =====
-var trainQueue=[],trainIdx=0,trainStats={yes:0,no:0};
-function startTrain(){
- if(!isAdmin)return;   // securite : reserve a l'admin
- // on prend les annonces non encore jugees, melangees
- trainQueue=items.slice().sort(function(){return Math.random()-0.5;});
- trainIdx=0;trainStats={yes:0,no:0};
- renderTrain();
-}
-function renderTrain(){
- var zone=document.getElementById("trainZone");if(!zone)return;
- if(trainIdx>=trainQueue.length){
-  zone.innerHTML='<p style="color:#00FF7F;font-size:15px;text-align:center">\u2705 Termin\u00e9 ! '+trainStats.yes+' gard\u00e9es, '+trainStats.no+' rejet\u00e9es.<br><span style="color:#8b97a7;font-size:12px">Recharge la page pour recommencer.</span></p>';
-  document.getElementById("trainProg").textContent="";
-  return;
- }
- var a=trainQueue[trainIdx];
- document.getElementById("trainProg").textContent=(trainIdx+1)+" / "+trainQueue.length+"  ·  \u2713 "+trainStats.yes+"  \u2717 "+trainStats.no;
- var card=document.createElement("div");
- card.className="tcard";
- var esc=function(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");};
- card.innerHTML='<div class="tstamp y">Je veux</div><div class="tstamp n">Jette</div>'+
-  '<div class="tph">'+(a.img?'<img src="'+esc(a.img)+'" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">':'')+'<div class="tnoimg" style="display:'+(a.img?'none':'flex')+'">Pas d\'image</div></div>'+
-  '<div class="tmeta"><div class="tti">'+esc(a.name)+'</div><div class="trow"><span class="tpr">'+a.price+'\u20ac</span><span class="tsc">'+esc(a.mk)+(a.sc!=null?" \u00b7 "+a.sc+"/10":"")+'</span></div></div>';
- zone.innerHTML="";zone.appendChild(card);
- enableTrainSwipe(card);
-}
-function trainDecide(want){
- if(!isAdmin)return;   // securite : reserve a l'admin
- if(trainIdx>=trainQueue.length)return;
- var a=trainQueue[trainIdx];
- if(want){trainStats.yes++;}
- else{
-  trainStats.no++;
-  // envoyer en rejet : le bot ne le reproposera plus + retire du site
-  if(db&&a.vid){
-   db.from("rejets").insert([{title:a.name,raison:"train_rejet",vinted_id:a.vid}]).then(function(){
-    db.from("annonces").delete().eq("vinted_id",a.vid);
-   });
-   items=items.filter(function(x){return x.vid!==a.vid;});
-  }
- }
- var card=document.querySelector("#trainZone .tcard");
- if(card){card.classList.add(want?"sy":"sn");card.style.transform="translateX("+(want?"":"-")+"140%) rotate("+(want?"":"-")+"16deg)";card.style.opacity="0";}
- trainIdx++;
- setTimeout(renderTrain,300);
-}
-function enableTrainSwipe(card){
- var sx=0,dx=0,drag=false;
- card.addEventListener("touchstart",function(e){drag=true;sx=e.touches[0].clientX;},{passive:true});
- card.addEventListener("touchmove",function(e){if(!drag)return;dx=e.touches[0].clientX-sx;card.style.transform="translateX("+dx+"px) rotate("+(dx/20)+"deg)";card.classList.toggle("sy",dx>40);card.classList.toggle("sn",dx<-40);},{passive:true});
- card.addEventListener("touchend",function(){drag=false;if(dx>90){trainDecide(true);}else if(dx<-90){trainDecide(false);}else{card.style.transform="";card.classList.remove("sy","sn");}dx=0;});
-}
 // ===== ADMIN =====
-function adminLoad(){if(!db)return;
+function adminLoad(){if(!db||!isAdmin||!isOwner())return;
 db.from("lexique").select("*").order("kind").then(function(r){
 var by={};(r.data||[]).forEach(function(x){(by[x.kind]=by[x.kind]||[]).push(x);});
 var h="";Object.keys(by).sort().forEach(function(k){h+='<div class="kindtitle">'+k+'</div>';by[k].forEach(function(x){h+='<div class="aitem"><span>'+x.mot+'</span><div class="ops"><button class="bDel" data-lxdel="'+x.id+'">Suppr</button></div></div>';});});
@@ -497,25 +415,24 @@ P.querySelectorAll("[data-pftog]").forEach(function(b){b.onclick=function(){db.f
 });
 }
 function bindAdmin(){
-document.getElementById("lxAdd").onclick=function(){var m=document.getElementById("lxMot").value.trim();if(!m)return;db.from("lexique").insert({mot:m,kind:document.getElementById("lxKind").value}).then(function(){document.getElementById("lxMot").value="";adminLoad();});};
-document.getElementById("mkAdd").onclick=function(){var c=document.getElementById("mkCode").value.trim().toUpperCase(),u=document.getElementById("mkUrl").value.trim();if(!c||!u)return;db.from("marches").insert({code:c,base_url:u,country_id:parseInt(document.getElementById("mkCid").value)||0}).then(function(){document.getElementById("mkCode").value="";document.getElementById("mkUrl").value="";document.getElementById("mkCid").value="";adminLoad();});};
-document.getElementById("pfAdd").onclick=function(){var e=document.getElementById("pfMail").value.trim().toLowerCase();if(!e)return;db.from("profils").insert({email:e,role:document.getElementById("pfRole").value,statut:"actif",paye_jusqu_au:document.getElementById("pfDate").value||null}).then(function(){document.getElementById("pfMail").value="";adminLoad();});};
+if(!isAdmin||!isOwner())return;   // SECURITE : pas d'attache des handlers si pas owner
+document.getElementById("lxAdd").onclick=function(){if(!isOwner())return;var m=document.getElementById("lxMot").value.trim();if(!m)return;db.from("lexique").insert({mot:m,kind:document.getElementById("lxKind").value}).then(function(){document.getElementById("lxMot").value="";adminLoad();});};
+document.getElementById("mkAdd").onclick=function(){if(!isOwner())return;var c=document.getElementById("mkCode").value.trim().toUpperCase(),u=document.getElementById("mkUrl").value.trim();if(!c||!u)return;db.from("marches").insert({code:c,base_url:u,country_id:parseInt(document.getElementById("mkCid").value)||0}).then(function(){document.getElementById("mkCode").value="";document.getElementById("mkUrl").value="";document.getElementById("mkCid").value="";adminLoad();});};
+document.getElementById("pfAdd").onclick=function(){if(!isOwner())return;var e=document.getElementById("pfMail").value.trim().toLowerCase();if(!e)return;db.from("profils").insert({email:e,role:document.getElementById("pfRole").value,statut:"actif",paye_jusqu_au:document.getElementById("pfDate").value||null}).then(function(){document.getElementById("pfMail").value="";adminLoad();});};
 document.getElementById("cScan").onclick=scanClean;
 document.getElementById("cDelBtn").onclick=deleteSelected;
-var ty=document.getElementById("tYes");if(ty)ty.onclick=function(){trainDecide(true);};
-var tn=document.getElementById("tNo");if(tn)tn.onclick=function(){trainDecide(false);};
-var ts=document.getElementById("tSkip");if(ts)ts.onclick=function(){trainIdx++;renderTrain();};
 var cs=document.getElementById("cSearch");if(cs){cs.oninput=function(){cleanSearchTerm=this.value;if(window._cleanGroups)renderCleanGroups();};}
 }
 function startApp(){
 document.getElementById("login").classList.add("hidden");
 document.getElementById("app").classList.remove("hidden");
-isAdmin=session.role==="admin";
+// SECURITE : isAdmin est calcule uniquement a partir de l'email FOUNDER.
+// Modifier localStorage ne suffit PAS pour devenir admin.
+isAdmin = isOwner();
 document.getElementById("rolePill").textContent=isAdmin?"admin":"abonné";
 document.getElementById("admBox").classList.toggle("hidden",!isAdmin);
 document.getElementById("navAdmin").classList.toggle("hidden",!isAdmin);
 document.getElementById("navClean").classList.toggle("hidden",!isAdmin);
-document.getElementById("navTrain").classList.toggle("hidden",!isAdmin);
 bindUI();loadAll();if(isAdmin){bindAdmin();adminLoad();}
 }
 function checkDevice(email,cb){
@@ -524,6 +441,12 @@ if(ids[DEVICE_ID]){if(db){db.from("appareils").update({last_seen:iso}).eq("email
 if(Object.keys(ids).length>=2){cb(false,"Limite de 2 appareils atteinte. Va dans Profil sur un de tes appareils pour en lib\u00e9rer un.");return;}
 var row={email:email,device_id:DEVICE_ID,label:deviceLabel(),last_seen:iso};if(db){db.from("appareils").insert(row).then(function(){cb(true);});}else{restInsert("appareils",row).then(function(){cb(true);});}}
 if(db){db.from("appareils").select("*").eq("email",email).then(function(r){decide(r.data);}).catch(function(){cb(true);});}else{restGet("appareils?select=*&email=eq."+encodeURIComponent(email)).then(decide).catch(function(){cb(true);});}}
+// === SECURITE STRICTE : seul l'email FOUNDER peut etre admin ===
+// Meme si la base dit "role: admin" pour un autre email, il ne devient PAS admin.
+// Toutes les actions admin verifient isOwner() en plus de isAdmin pour double verrou.
+function isOwner(){
+ return !!(session && session.email && session.email.toLowerCase() === FOUNDER.toLowerCase());
+}
 function tryLogin(){
 var m=document.getElementById("lmail").value.trim().toLowerCase(),p=document.getElementById("lpw").value,err=document.getElementById("lerr");
 err.textContent="";
@@ -532,8 +455,8 @@ if(m===FOUNDER){session={email:m,role:"admin"};localStorage.setItem("tit_sess",J
 function afterProfile(pf){
 if(!pf){err.textContent="Email non autoris\u00e9. Contacte l'administrateur.";return;}
 if(pf.statut==="banni"){err.textContent="Compte suspendu \u2014 abonnement non r\u00e9gl\u00e9.";return;}
-if((pf.role||"user")==="admin"){session={email:m,role:"admin"};localStorage.setItem("tit_sess",JSON.stringify(session));startApp();return;}
-checkDevice(m,function(ok,msg){if(!ok){err.textContent=msg||"Limite de 2 appareils atteinte.";return;}session={email:m,role:pf.role||"user"};localStorage.setItem("tit_sess",JSON.stringify(session));startApp();});}
+// SECURITE : le role "admin" est ignore pour tous sauf FOUNDER (verifie au-dessus)
+checkDevice(m,function(ok,msg){if(!ok){err.textContent=msg||"Limite de 2 appareils atteinte.";return;}session={email:m,role:"user"};localStorage.setItem("tit_sess",JSON.stringify(session));startApp();});}
 if(db){db.from("profils").select("*").eq("email",m).limit(1).then(function(r){afterProfile((r.data||[])[0]);}).catch(function(){err.textContent="Erreur de connexion \u00e0 la base.";});}
 else{restGet("profils?select=*&email=eq."+encodeURIComponent(m)+"&limit=1").then(function(rows){afterProfile((rows||[])[0]);}).catch(function(){err.textContent="Erreur de connexion \u00e0 la base.";});}
 }
@@ -549,7 +472,7 @@ document.getElementById("fSize").onchange=function(){filters.size=this.value;ren
 document.getElementById("fPrice").onchange=function(){filters.price=this.value;renderGrid();};
 document.getElementById("fClear").onclick=function(){filters={search:"",country:"",brand:"",type:"",coll:"",size:"",price:""};["fSearch","fCountry","fBrand","fType","fColl","fSize","fPrice"].forEach(function(id){document.getElementById(id).value="";});renderGrid();};
 document.querySelectorAll(".navb").forEach(function(b){b.onclick=function(){switchTab(b.getAttribute("data-tab"));};});
-var sw=document.getElementById("admSw");sw.onclick=function(){admin=!admin;sw.classList.toggle("on");renderGrid();renderProfile();};
+var sw=document.getElementById("admSw");sw.onclick=function(){if(!isAdmin||!isOwner())return;admin=!admin;sw.classList.toggle("on");renderGrid();renderProfile();};
 document.getElementById("logout").onclick=function(){localStorage.removeItem("tit_sess");location.reload();};
 }
 function wireLogin(){var b=document.getElementById("lbtn");if(b)b.onclick=tryLogin;var pw=document.getElementById("lpw");if(pw)pw.addEventListener("keydown",function(e){if(e.key==="Enter")tryLogin();});}
